@@ -20,6 +20,7 @@ import FormCanvas from '@/components/form-builder/FormCanvas'
 function FormBuilder() {
   const [fields, setFields] = useState([])
   const [activeField, setActiveField] = useState(null)
+  const [selectedFieldId, setSelectedFieldId] = useState(null)
 
   function handleDragEnd(event) {
     const { active, over } = event
@@ -34,10 +35,6 @@ function FormBuilder() {
 
     // New field from palette
     if (activeType === 'palette-field') {
-      if (over.id !== 'form-canvas') {
-        return
-      }
-
       const fieldType = active.data.current?.fieldType
 
       if (!fieldType) {
@@ -46,10 +43,34 @@ function FormBuilder() {
 
       const newField = createField(fieldType)
 
-      setFields((currentFields) => [
-        ...currentFields,
-        newField,
-      ])
+      setFields((currentFields) => {
+        // Empty canvas
+        if (over.id === 'form-canvas') {
+          return [
+            ...currentFields,
+            newField,
+          ]
+        }
+
+        // Dropped on an existing field
+        const overIndex = currentFields.findIndex(
+          (field) => field.id === over.id
+        )
+
+        if (overIndex === -1) {
+          return currentFields
+        }
+
+        const newFields = [...currentFields]
+
+        newFields.splice(
+          overIndex,
+          0,
+          newField
+        )
+
+        return newFields
+      })
 
       return
     }
@@ -81,63 +102,10 @@ function FormBuilder() {
     }
   }
 
-  function handleDragEnd(event) {
-    const { active, over } = event
-
-    if (!over) {
-      return
-    }
-
-    const activeType = active.data.current?.type
-
-    // Dragging a new field from the palette
-    if (activeType === 'palette-field') {
-      if (over.id !== 'form-canvas') {
-        return
-      }
-
-      const fieldType = active.data.current?.fieldType
-
-      if (!fieldType) {
-        return
-      }
-
-      const newField = createField(fieldType)
-
-      setFields((currentFields) => [
-        ...currentFields,
-        newField,
-      ])
-
-      return
-    }
-
-    // Reordering existing fields
-    if (active.id !== over.id) {
-      setFields((currentFields) => {
-        const oldIndex = currentFields.findIndex(
-          (field) => field.id === active.id
-        )
-
-        const newIndex = currentFields.findIndex(
-          (field) => field.id === over.id
-        )
-
-        if (
-          oldIndex === -1 ||
-          newIndex === -1
-        ) {
-          return currentFields
-        }
-
-        return arrayMove(
-          currentFields,
-          oldIndex,
-          newIndex
-        )
-      })
-    }
+  function handleFieldSelect(id) {
+    setSelectedFieldId(id)
   }
+
 
   function handleDragStart(event) {
     const { active } = event
