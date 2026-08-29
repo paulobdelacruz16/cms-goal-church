@@ -1,9 +1,43 @@
+import { useState } from 'react'
 import { ArrowLeft, Save } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { DndContext } from '@dnd-kit/core'
 
 import { Button } from '@/components/ui/button'
 
+import { createField } from '@/lib/form-fields'
+
+import FieldPalette from '@/components/form-builder/FieldPalette'
+import FormCanvas from '@/components/form-builder/FormCanvas'
+
 function FormBuilder() {
+  const [fields, setFields] = useState([])
+
+  function handleDragEnd(event) {
+    const { active, over } = event
+
+    if (!over) {
+      return
+    }
+
+    if (over.id !== 'form-canvas') {
+      return
+    }
+
+    const fieldType = active.data.current?.fieldType
+
+    if (!fieldType) {
+      return
+    }
+
+    const newField = createField(fieldType)
+
+    setFields((currentFields) => [
+      ...currentFields,
+      newField,
+    ])
+  }
+
   return (
     <div className="flex h-[calc(100vh-2rem)] flex-col">
 
@@ -42,97 +76,62 @@ function FormBuilder() {
       </header>
 
       {/* Builder */}
-      <div className="grid min-h-0 flex-1 grid-cols-[220px_minmax(0,1fr)_280px]">
+      <DndContext onDragEnd={handleDragEnd}>
 
-        {/* Field Palette */}
-        <aside className="overflow-y-auto border-r p-4">
+        <div className="grid min-h-0 flex-1 grid-cols-[220px_minmax(0,1fr)_280px]">
 
-          <h2 className="mb-4 text-sm font-semibold">
-            Fields
-          </h2>
+          {/* Field Palette */}
+          <aside className="overflow-y-auto border-r p-4">
 
-          <div className="space-y-2">
+            <h2 className="mb-4 text-sm font-semibold">
+              Fields
+            </h2>
 
-            <div className="rounded-lg border p-3">
-              Text
-            </div>
+            <FieldPalette />
 
-            <div className="rounded-lg border p-3">
-              Email
-            </div>
+          </aside>
 
-            <div className="rounded-lg border p-3">
-              Number
-            </div>
+          {/* Canvas */}
+          <main className="overflow-y-auto bg-muted/30 p-8">
 
-            <div className="rounded-lg border p-3">
-              Textarea
-            </div>
+            <div className="mx-auto min-h-full max-w-2xl">
 
-            <div className="rounded-lg border p-3">
-              Checkbox
-            </div>
+              <div className="rounded-xl border bg-background p-8 shadow-sm">
 
-            <div className="rounded-lg border p-3">
-              Select
-            </div>
+                <h2 className="text-2xl font-bold">
+                  Untitled Form
+                </h2>
 
-          </div>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Build your form below.
+                </p>
 
-        </aside>
-
-        {/* Canvas */}
-        <main className="overflow-y-auto bg-muted/30 p-8">
-
-          <div className="mx-auto min-h-full max-w-2xl">
-
-            <div className="rounded-xl border bg-background p-8 shadow-sm">
-
-              <h2 className="text-2xl font-bold">
-                Untitled Form
-              </h2>
-
-              <p className="mt-1 text-sm text-muted-foreground">
-                Drag fields here to build your form.
-              </p>
-
-              {/* Drop area */}
-              <div className="mt-8 flex min-h-96 items-center justify-center rounded-lg border-2 border-dashed">
-
-                <div className="text-center">
-
-                  <p className="font-medium">
-                    Drop fields here
-                  </p>
-
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    Drag a field from the left panel.
-                  </p>
-
+                <div className="mt-8">
+                  <FormCanvas fields={fields} />
                 </div>
 
               </div>
 
             </div>
 
-          </div>
+          </main>
 
-        </main>
+          {/* Properties */}
+          <aside className="overflow-y-auto border-l p-4">
 
-        {/* Properties */}
-        <aside className="overflow-y-auto border-l p-4">
+            <h2 className="text-sm font-semibold">
+              Properties
+            </h2>
 
-          <h2 className="text-sm font-semibold">
-            Properties
-          </h2>
+            <div className="mt-8 text-center text-sm text-muted-foreground">
+              Select a field to edit its properties.
+            </div>
 
-          <div className="mt-8 text-center text-sm text-muted-foreground">
-            Select a field to edit its properties.
-          </div>
+          </aside>
 
-        </aside>
+        </div>
 
-      </div>
+      </DndContext>
 
     </div>
   )
