@@ -1,4 +1,11 @@
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable'
+
 import { useDroppable } from '@dnd-kit/core'
+
+import SortableField from './SortableField'
 
 function FormCanvas({ fields }) {
   const {
@@ -30,22 +37,19 @@ function FormCanvas({ fields }) {
           </div>
         </div>
       ) : (
-        <div className="space-y-4">
-          {fields.map((field) => (
-            <div
-              key={field.id}
-              className="rounded-lg border bg-background p-4"
-            >
-              <p className="font-medium">
-                {field.label}
-              </p>
-
-              <p className="text-xs text-muted-foreground">
-                {field.type}
-              </p>
-            </div>
-          ))}
-        </div>
+        <SortableContext
+          items={fields.map((field) => field.id)}
+          strategy={verticalListSortingStrategy}
+        >
+          <div className="space-y-4">
+            {fields.map((field) => (
+              <SortableField
+                key={field.id}
+                field={field}
+              />
+            ))}
+          </div>
+        </SortableContext>
       )}
     </div>
   )

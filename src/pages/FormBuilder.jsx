@@ -1,7 +1,14 @@
 import { useState } from 'react'
 import { ArrowLeft, Save } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import { DndContext } from '@dnd-kit/core'
+import {
+  DndContext,
+  DragOverlay,
+  closestCenter,
+} from '@dnd-kit/core'
+import {
+  arrayMove,
+} from '@dnd-kit/sortable'
 
 import { Button } from '@/components/ui/button'
 
@@ -12,6 +19,67 @@ import FormCanvas from '@/components/form-builder/FormCanvas'
 
 function FormBuilder() {
   const [fields, setFields] = useState([])
+  const [activeField, setActiveField] = useState(null)
+
+  function handleDragEnd(event) {
+    const { active, over } = event
+
+    setActiveField(null)
+
+    if (!over) {
+      return
+    }
+
+    const activeType = active.data.current?.type
+
+    // New field from palette
+    if (activeType === 'palette-field') {
+      if (over.id !== 'form-canvas') {
+        return
+      }
+
+      const fieldType = active.data.current?.fieldType
+
+      if (!fieldType) {
+        return
+      }
+
+      const newField = createField(fieldType)
+
+      setFields((currentFields) => [
+        ...currentFields,
+        newField,
+      ])
+
+      return
+    }
+
+    // Reorder existing fields
+    if (active.id !== over.id) {
+      setFields((currentFields) => {
+        const oldIndex = currentFields.findIndex(
+          (field) => field.id === active.id
+        )
+
+        const newIndex = currentFields.findIndex(
+          (field) => field.id === over.id
+        )
+
+        if (
+          oldIndex === -1 ||
+          newIndex === -1
+        ) {
+          return currentFields
+        }
+
+        return arrayMove(
+          currentFields,
+          oldIndex,
+          newIndex
+        )
+      })
+    }
+  }
 
   function handleDragEnd(event) {
     const { active, over } = event
@@ -20,22 +88,73 @@ function FormBuilder() {
       return
     }
 
-    if (over.id !== 'form-canvas') {
+    const activeType = active.data.current?.type
+
+    // Dragging a new field from the palette
+    if (activeType === 'palette-field') {
+      if (over.id !== 'form-canvas') {
+        return
+      }
+
+      const fieldType = active.data.current?.fieldType
+
+      if (!fieldType) {
+        return
+      }
+
+      const newField = createField(fieldType)
+
+      setFields((currentFields) => [
+        ...currentFields,
+        newField,
+      ])
+
       return
     }
 
-    const fieldType = active.data.current?.fieldType
+    // Reordering existing fields
+    if (active.id !== over.id) {
+      setFields((currentFields) => {
+        const oldIndex = currentFields.findIndex(
+          (field) => field.id === active.id
+        )
 
-    if (!fieldType) {
+        const newIndex = currentFields.findIndex(
+          (field) => field.id === over.id
+        )
+
+        if (
+          oldIndex === -1 ||
+          newIndex === -1
+        ) {
+          return currentFields
+        }
+
+        return arrayMove(
+          currentFields,
+          oldIndex,
+          newIndex
+        )
+      })
+    }
+  }
+
+  function handleDragStart(event) {
+    const { active } = event
+
+    const type = active.data.current?.type
+
+    if (type !== 'palette-field') {
       return
     }
 
-    const newField = createField(fieldType)
+    setActiveField(
+      active.data.current.fieldType
+    )
+  }
 
-    setFields((currentFields) => [
-      ...currentFields,
-      newField,
-    ])
+  function handleDragCancel() {
+    setActiveField(null)
   }
 
   return (
@@ -76,12 +195,17 @@ function FormBuilder() {
       </header>
 
       {/* Builder */}
-      <DndContext onDragEnd={handleDragEnd}>
+      <DndContext
+        collisionDetection={closestCenter}
+        onDragStart={handleDragStart}
+        onDragCancel={handleDragCancel}
+        onDragEnd={handleDragEnd}
+      >
 
         <div className="grid min-h-0 flex-1 grid-cols-[220px_minmax(0,1fr)_280px]">
 
           {/* Field Palette */}
-          <aside className="overflow-y-auto border-r p-4">
+          <aside className="min-w-0 overflow-x-hidden overflow-y-auto border-r p-4">
 
             <h2 className="mb-4 text-sm font-semibold">
               Fields
@@ -92,7 +216,7 @@ function FormBuilder() {
           </aside>
 
           {/* Canvas */}
-          <main className="overflow-y-auto bg-muted/30 p-8">
+          <main className="min-w-0 overflow-y-auto bg-muted/30 p-8">
 
             <div className="mx-auto min-h-full max-w-2xl">
 
@@ -117,7 +241,7 @@ function FormBuilder() {
           </main>
 
           {/* Properties */}
-          <aside className="overflow-y-auto border-l p-4">
+          <aside className="min-w-0 overflow-x-hidden overflow-y-auto border-r p-4">
 
             <h2 className="text-sm font-semibold">
               Properties
@@ -130,6 +254,13 @@ function FormBuilder() {
           </aside>
 
         </div>
+        <DragOverlay>
+          {activeField ? (
+            <div className="w-48 rounded-lg border bg-background p-3 text-sm font-medium shadow-lg">
+              {activeField}
+            </div>
+          ) : null}
+        </DragOverlay>
 
       </DndContext>
 
