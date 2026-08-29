@@ -43,6 +43,7 @@ export function createField(type) {
     name: `${type}_${Date.now()}`,
     label: getDefaultLabel(type),
     required: false,
+    placeholder: '',
   }
 
   if (type === FIELD_TYPES.SELECT) {

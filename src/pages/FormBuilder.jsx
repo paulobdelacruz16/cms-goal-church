@@ -16,6 +16,7 @@ import { createField } from '@/lib/form-fields'
 
 import FieldPalette from '@/components/form-builder/FieldPalette'
 import FormCanvas from '@/components/form-builder/FormCanvas'
+import FieldProperties from '@/components/form-builder/FieldProperties'
 
 function FormBuilder() {
   const [fields, setFields] = useState([])
@@ -104,6 +105,16 @@ function FormBuilder() {
         )
       })
     }
+  }
+
+  function handleFieldChange(updatedField) {
+    setFields((currentFields) =>
+      currentFields.map((field) =>
+        field.id === updatedField.id
+          ? updatedField
+          : field
+      )
+    )
   }
 
   function handleFieldSelect(id) {
@@ -217,61 +228,16 @@ function FormBuilder() {
           </main>
 
           {/* Properties */}
-          <aside className="min-w-0 overflow-x-hidden overflow-y-auto border-r p-4">
+          <aside className="min-w-0 overflow-x-hidden overflow-y-auto border-l p-4">
 
             <h2 className="text-sm font-semibold">
               Properties
             </h2>
 
-            {selectedField ? (
-              <div className="mt-6 space-y-4">
-
-                <div>
-                  <p className="text-sm font-medium">
-                    Field
-                  </p>
-
-                  <p className="text-sm text-muted-foreground">
-                    {selectedField.type}
-                  </p>
-                </div>
-
-                <div>
-                  <p className="text-sm font-medium">
-                    Label
-                  </p>
-
-                  <p className="text-sm text-muted-foreground">
-                    {selectedField.label}
-                  </p>
-                </div>
-
-                <div>
-                  <p className="text-sm font-medium">
-                    Name
-                  </p>
-
-                  <p className="text-sm text-muted-foreground">
-                    {selectedField.name}
-                  </p>
-                </div>
-
-                <div>
-                  <p className="text-sm font-medium">
-                    Required
-                  </p>
-
-                  <p className="text-sm text-muted-foreground">
-                    {selectedField.required ? 'Yes' : 'No'}
-                  </p>
-                </div>
-
-              </div>
-            ) : (
-              <div className="mt-8 text-center text-sm text-muted-foreground">
-                Select a field to edit its properties.
-              </div>
-            )}
+            <FieldProperties
+              field={selectedField}
+              onChange={handleFieldChange}
+            />
 
           </aside>
 
