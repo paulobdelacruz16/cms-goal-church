@@ -22,6 +22,10 @@ function FormBuilder() {
   const [activeField, setActiveField] = useState(null)
   const [selectedFieldId, setSelectedFieldId] = useState(null)
 
+  const selectedField = fields.find(
+    (field) => field.id === selectedFieldId
+  );
+
   function handleDragEnd(event) {
     const { active, over } = event
 
@@ -199,7 +203,11 @@ function FormBuilder() {
                 </p>
 
                 <div className="mt-8">
-                  <FormCanvas fields={fields} />
+                  <FormCanvas
+                    fields={fields}
+                    selectedFieldId={selectedFieldId}
+                    onFieldSelect={handleFieldSelect}
+                  />
                 </div>
 
               </div>
@@ -215,9 +223,55 @@ function FormBuilder() {
               Properties
             </h2>
 
-            <div className="mt-8 text-center text-sm text-muted-foreground">
-              Select a field to edit its properties.
-            </div>
+            {selectedField ? (
+              <div className="mt-6 space-y-4">
+
+                <div>
+                  <p className="text-sm font-medium">
+                    Field
+                  </p>
+
+                  <p className="text-sm text-muted-foreground">
+                    {selectedField.type}
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-sm font-medium">
+                    Label
+                  </p>
+
+                  <p className="text-sm text-muted-foreground">
+                    {selectedField.label}
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-sm font-medium">
+                    Name
+                  </p>
+
+                  <p className="text-sm text-muted-foreground">
+                    {selectedField.name}
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-sm font-medium">
+                    Required
+                  </p>
+
+                  <p className="text-sm text-muted-foreground">
+                    {selectedField.required ? 'Yes' : 'No'}
+                  </p>
+                </div>
+
+              </div>
+            ) : (
+              <div className="mt-8 text-center text-sm text-muted-foreground">
+                Select a field to edit its properties.
+              </div>
+            )}
 
           </aside>
 

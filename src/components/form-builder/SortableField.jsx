@@ -1,7 +1,11 @@
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 
-function SortableField({ field }) {
+function SortableField({
+  field,
+  selected,
+  onSelect,
+}) {
   const {
     attributes,
     listeners,
@@ -23,7 +27,12 @@ function SortableField({ field }) {
     <div
       ref={setNodeRef}
       style={style}
-      className="rounded-lg border bg-background"
+      onClick={() => onSelect(field.id)}
+      className={`
+    rounded-lg border bg-background
+    transition
+    ${selected ? 'border-primary ring-2 ring-primary/20' : ''}
+  `}
     >
       <div className="flex items-center gap-3 p-4">
 

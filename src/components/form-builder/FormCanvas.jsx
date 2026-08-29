@@ -7,7 +7,11 @@ import { useDroppable } from '@dnd-kit/core'
 
 import SortableField from './SortableField'
 
-function FormCanvas({ fields }) {
+function FormCanvas({
+  fields,
+  selectedFieldId,
+  onFieldSelect,
+}) {
   const {
     setNodeRef,
     isOver,
@@ -46,6 +50,8 @@ function FormCanvas({ fields }) {
               <SortableField
                 key={field.id}
                 field={field}
+                selected={field.id === selectedFieldId}
+                onSelect={onFieldSelect}
               />
             ))}
           </div>
