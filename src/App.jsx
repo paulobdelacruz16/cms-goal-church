@@ -4,6 +4,8 @@ import {
   Route,
 } from 'react-router-dom'
 
+import Layout from './components/Layout'
+
 import Dashboard from './pages/Dashboard'
 import Forms from './pages/Forms'
 import FormBuilder from './pages/FormBuilder'
@@ -14,35 +16,49 @@ import Submissions from './pages/Submissions'
 function App() {
   return (
     <BrowserRouter>
+
       <Routes>
 
-        <Route path="/" element={<Dashboard />} />
-
+        {/* Public */}
         <Route path="/login" element={<Login />} />
 
-        <Route path="/forms" element={<Forms />} />
+        {/* Application */}
+        <Route element={<Layout />}>
 
-        <Route
-          path="/forms/new"
-          element={<FormBuilder />}
-        />
+          <Route
+            path="/"
+            element={<Dashboard />}
+          />
 
-        <Route
-          path="/forms/:id"
-          element={<FormBuilder />}
-        />
+          <Route
+            path="/forms"
+            element={<Forms />}
+          />
 
-        <Route
-          path="/forms/:id/preview"
-          element={<FormPreview />}
-        />
+          <Route
+            path="/forms/new"
+            element={<FormBuilder />}
+          />
 
-        <Route
-          path="/forms/:id/data"
-          element={<Submissions />}
-        />
+          <Route
+            path="/forms/:id"
+            element={<FormBuilder />}
+          />
+
+          <Route
+            path="/forms/:id/preview"
+            element={<FormPreview />}
+          />
+
+          <Route
+            path="/forms/:id/data"
+            element={<Submissions />}
+          />
+
+        </Route>
 
       </Routes>
+
     </BrowserRouter>
   )
 }
