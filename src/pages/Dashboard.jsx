@@ -1,9 +1,5 @@
-import {
-  FileText,
-  Database,
-  Plus,
-} from 'lucide-react'
-
+import { Button } from '@/components/ui/button'
+import { FileText, Database, Plus } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 function Dashboard() {
@@ -18,30 +14,29 @@ function Dashboard() {
             Dashboard
           </h1>
 
-          <p className="mt-1 text-gray-500">
+          <p className="mt-1 text-muted-foreground">
             Manage your forms and submissions.
           </p>
         </div>
 
-        <Link
-          to="/forms/new"
-          className="flex items-center gap-2 rounded-lg bg-black px-4 py-2 text-sm font-medium text-white hover:bg-gray-800"
-        >
-          <Plus size={18} />
-          Create Form
-        </Link>
+        <Button asChild>
+          <Link to="/forms/new">
+            <Plus />
+            Create Form
+          </Link>
+        </Button>
 
       </div>
 
       {/* Statistics */}
       <div className="grid gap-4 md:grid-cols-2">
 
-        <div className="rounded-xl border bg-white p-6">
+        <div className="rounded-xl border bg-card p-6">
 
           <div className="flex items-center justify-between">
 
             <div>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-muted-foreground">
                 Total Forms
               </p>
 
@@ -56,12 +51,12 @@ function Dashboard() {
 
         </div>
 
-        <div className="rounded-xl border bg-white p-6">
+        <div className="rounded-xl border bg-card p-6">
 
           <div className="flex items-center justify-between">
 
             <div>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-muted-foreground">
                 Submissions
               </p>
 
