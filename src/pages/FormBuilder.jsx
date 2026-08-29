@@ -107,6 +107,49 @@ function FormBuilder() {
     }
   }
 
+  function handleFieldDelete(id) {
+    setFields((currentFields) =>
+      currentFields.filter(
+        (field) => field.id !== id
+      )
+    )
+
+    if (selectedFieldId === id) {
+      setSelectedFieldId(null)
+    }
+  }
+
+  function handleFieldDuplicate(id) {
+    setFields((currentFields) => {
+      const index = currentFields.findIndex(
+        (field) => field.id === id
+      )
+
+      if (index === -1) {
+        return currentFields
+      }
+
+      const original = currentFields[index]
+
+      const duplicate = {
+        ...original,
+        id: `field_${crypto.randomUUID()}`,
+        name: `${original.name}_copy`,
+        label: `${original.label} Copy`,
+      }
+
+      const newFields = [...currentFields]
+
+      newFields.splice(
+        index + 1,
+        0,
+        duplicate
+      )
+
+      return newFields
+    })
+  }
+
   function handleFieldChange(updatedField) {
     setFields((currentFields) =>
       currentFields.map((field) =>
@@ -218,6 +261,8 @@ function FormBuilder() {
                     fields={fields}
                     selectedFieldId={selectedFieldId}
                     onFieldSelect={handleFieldSelect}
+                    onDelete={handleFieldDelete}
+                    onDuplicate={handleFieldDuplicate}
                   />
                 </div>
 

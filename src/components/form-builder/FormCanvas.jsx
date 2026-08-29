@@ -11,6 +11,8 @@ function FormCanvas({
   fields,
   selectedFieldId,
   onFieldSelect,
+  onDelete,
+  onDuplicate,
 }) {
   const {
     setNodeRef,
@@ -52,6 +54,8 @@ function FormCanvas({
                 field={field}
                 selected={field.id === selectedFieldId}
                 onSelect={onFieldSelect}
+                onDelete={onDelete}
+                onDuplicate={onDuplicate}
               />
             ))}
           </div>
