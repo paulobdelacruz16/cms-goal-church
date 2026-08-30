@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Plus, Pencil, Trash2 } from 'lucide-react'
+import { Plus, Pencil, Trash2, Eye } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 
@@ -138,6 +138,12 @@ function Forms() {
                   </Link>
                 </Button>
 
+                <Button asChild size="icon" variant="outline">
+                  <Link to={`/forms/${form._id}/preview`}>
+                    <Eye />
+                  </Link>
+                </Button>
+
                 <Button
                   variant="destructive"
                   size="icon"
@@ -150,7 +156,7 @@ function Forms() {
               </div>
 
             </div>
-        
+
           ))}
 
         </div>

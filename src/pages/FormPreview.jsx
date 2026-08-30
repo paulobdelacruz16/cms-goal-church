@@ -18,6 +18,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { ArrowLeft } from 'lucide-react'
+import { Link } from 'react-router-dom'
+
+import { Button } from '@/components/ui/button'
 
 function FormPreview() {
   const { id } = useParams()
@@ -86,26 +90,60 @@ function FormPreview() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl p-8">
+    <div className="min-h-full bg-muted/30 p-6 md:p-10">
 
-      <div className="rounded-xl border bg-background p-8 shadow-sm">
+      <div className="mx-auto max-w-3xl">
 
-        <h1 className="text-3xl font-bold">
-          {form.name}
-        </h1>
+        {/* Header */}
+        <div className="mb-6 flex items-center justify-between">
 
-        <p className="mt-2 text-sm text-muted-foreground">
-          Form Preview
-        </p>
+          <div>
+            <p className="text-sm font-medium text-primary">
+              Form Preview
+            </p>
 
-        <div className="mt-8 space-y-6">
+            <h1 className="mt-1 text-2xl font-bold">
+              {form.name}
+            </h1>
+          </div>
 
-          {form.fields.map((field) => (
-            <PreviewField
-              key={field.id}
-              field={field}
-            />
-          ))}
+          <Button asChild variant="outline">
+            <Link to={`/forms/${form._id}/edit`}>
+              <ArrowLeft />
+              Back to Builder
+            </Link>
+          </Button>
+
+        </div>
+
+        {/* Form */}
+        <div className="rounded-xl border bg-background p-6 shadow-sm md:p-8">
+
+          <div className="space-y-6">
+
+            {form.fields?.length > 0 ? (
+              form.fields.map((field) => (
+                <PreviewField
+                  key={field.id}
+                  field={field}
+                />
+              ))
+            ) : (
+              <div className="py-12 text-center text-sm text-muted-foreground">
+                This form has no fields yet.
+              </div>
+            )}
+
+          </div>
+
+          {/* Submit */}
+          {form.fields?.length > 0 && (
+            <div className="mt-8 border-t pt-6">
+              <Button disabled>
+                Submit
+              </Button>
+            </div>
+          )}
 
         </div>
 
