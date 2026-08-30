@@ -4,7 +4,6 @@ import {
 } from '@dnd-kit/sortable'
 
 import { useDroppable } from '@dnd-kit/core'
-
 import SortableField from './SortableField'
 
 function FormCanvas({
