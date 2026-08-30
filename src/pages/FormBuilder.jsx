@@ -288,7 +288,7 @@ function FormBuilder() {
 
           <div>
             <h1 className="font-semibold">
-              New Form
+              {id ? 'Edit Form' : 'New Form'}
             </h1>
 
             <p className="text-xs text-muted-foreground">
