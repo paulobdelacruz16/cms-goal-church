@@ -3,8 +3,10 @@ export const FIELD_TYPES = {
   EMAIL: 'email',
   NUMBER: 'number',
   TEXTAREA: 'textarea',
-  CHECKBOX: 'checkbox',
   SELECT: 'select',
+  RADIO: 'radio',
+  CHECKBOX: 'checkbox',
+  DATE: 'date',
 }
 
 export const FIELD_DEFINITIONS = [
@@ -25,14 +27,22 @@ export const FIELD_DEFINITIONS = [
     label: 'Textarea',
   },
   {
+    type: FIELD_TYPES.SELECT,
+    label: 'Select',
+  },
+  {
+    type: FIELD_TYPES.RADIO,
+    label: 'Radio',
+  },
+  {
     type: FIELD_TYPES.CHECKBOX,
     label: 'Checkbox',
   },
   {
-    type: FIELD_TYPES.SELECT,
-    label: 'Select',
+    type: FIELD_TYPES.DATE,
+    label: 'Date',
   },
-];
+]
 
 export function createField(type) {
   const id = `field_${crypto.randomUUID()}`
@@ -46,21 +56,30 @@ export function createField(type) {
     placeholder: '',
   }
 
-  if (type === FIELD_TYPES.SELECT) {
-    defaults.options = [
-      {
-        label: 'Option 1',
-        value: 'option_1',
-      },
-      {
-        label: 'Option 2',
-        value: 'option_2',
-      },
-    ]
+  if (
+    type === FIELD_TYPES.SELECT ||
+    type === FIELD_TYPES.RADIO
+  ) {
+    return {
+      ...defaults,
+      options: [
+        {
+          label: 'Option 1',
+          value: 'option-1',
+        },
+        {
+          label: 'Option 2',
+          value: 'option-2',
+        },
+      ],
+    }
   }
 
-  if (type === FIELD_TYPES.TEXTAREA) {
-    defaults.placeholder = ''
+  if (type === FIELD_TYPES.CHECKBOX) {
+    return {
+      ...defaults,
+      checked: false,
+    }
   }
 
   return defaults
