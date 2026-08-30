@@ -2,6 +2,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Button } from '@/components/ui/button'
+import { Plus, Trash2 } from 'lucide-react'
 
 function FieldProperties({
   field,
@@ -22,16 +23,50 @@ function FieldProperties({
     })
   }
 
-  function handleOptionChange(
-    index,
-    property,
-    value
-  ) {
+  function createOptionValue(label) {
+    return label
+      .toLowerCase()
+      .trim()
+      .replace(/\s+/g, '-')
+      .replace(/[^a-z0-9-]/g, '')
+      .replace(/-+/g, '-')
+  }
+
+  function handleOptionLabelChange(index, value) {
+    const options = [...(field.options || [])]
+
+    const currentOption = options[index]
+
+    const previousGeneratedValue =
+      createOptionValue(currentOption.label)
+
+    const newGeneratedValue =
+      createOptionValue(value)
+
+    const shouldAutoUpdateValue =
+      currentOption.value === previousGeneratedValue ||
+      currentOption.value === '' ||
+      !currentOption.value
+
+    options[index] = {
+      ...currentOption,
+      label: value,
+      ...(shouldAutoUpdateValue
+        ? {
+            value: newGeneratedValue,
+          }
+        : {}),
+    }
+
+    updateField('options', options)
+  }
+
+  function handleOptionValueChange(index, value) {
     const options = [...(field.options || [])]
 
     options[index] = {
       ...options[index],
-      [property]: value,
+      value,
     }
 
     updateField('options', options)
@@ -144,15 +179,15 @@ function FieldProperties({
       {/* Options */}
       {(field.type === 'select' ||
         field.type === 'radio') && (
-        <div className="space-y-4">
+        <div className="mt-6 space-y-4">
 
           <div>
-            <h3 className="text-sm font-medium">
+            <h3 className="text-sm font-semibold">
               Options
             </h3>
 
             <p className="mt-1 text-xs text-muted-foreground">
-              Add and edit the choices available to users.
+              Add and edit the choices for this field.
             </p>
           </div>
 
@@ -161,33 +196,67 @@ function FieldProperties({
             {(field.options || []).map(
               (option, index) => (
                 <div
-                  key={`${field.id}-${index}`}
-                  className="flex items-center gap-2"
+                  key={index}
+                  className="rounded-lg border p-3"
                 >
 
-                  <Input
-                    value={option.label}
-                    onChange={(event) =>
-                      handleOptionChange(
-                        index,
-                        'label',
-                        event.target.value
-                      )
-                    }
-                    placeholder="Label"
-                  />
+                  <div className="flex items-center justify-between">
 
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    onClick={() =>
-                      handleDeleteOption(index)
-                    }
-                    className="shrink-0"
-                  >
-                    ×
-                  </Button>
+                    <Label>
+                      Option {index + 1}
+                    </Label>
+
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() =>
+                        handleDeleteOption(index)
+                      }
+                      title="Delete option"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+
+                  </div>
+
+                  <div className="mt-3 space-y-3">
+
+                    {/* Option Label */}
+                    <div>
+                      <Label className="text-xs">
+                        Label
+                      </Label>
+
+                      <Input
+                        value={option.label || ''}
+                        onChange={(event) =>
+                          handleOptionLabelChange(
+                            index,
+                            event.target.value
+                          )
+                        }
+                      />
+                    </div>
+
+                    {/* Option Value */}
+                    <div>
+                      <Label className="text-xs">
+                        Value
+                      </Label>
+
+                      <Input
+                        value={option.value || ''}
+                        onChange={(event) =>
+                          handleOptionValueChange(
+                            index,
+                            event.target.value
+                          )
+                        }
+                      />
+                    </div>
+
+                  </div>
 
                 </div>
               )
@@ -201,7 +270,8 @@ function FieldProperties({
             className="w-full"
             onClick={handleAddOption}
           >
-            + Add Option
+            <Plus />
+            Add Option
           </Button>
 
         </div>
