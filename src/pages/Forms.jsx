@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Plus, FileText, Trash2 } from 'lucide-react'
+import { Plus, Pencil, Trash2 } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 
@@ -10,18 +10,18 @@ import {
 
 function Forms() {
   const {
-    data: forms,
+    data: forms = [],
     isLoading,
     isError,
-    error,
   } = useDynamicPageContent()
 
   const deleteMutation = useDeleteDynamicPageContent()
 
   function handleDelete(id) {
-    const confirmed = window.confirm(
-      'Are you sure you want to delete this form?'
-    )
+    const confirmed =
+      window.confirm(
+        'Are you sure you want to delete this form?'
+      )
 
     if (!confirmed) {
       return
@@ -32,7 +32,7 @@ function Forms() {
 
   if (isLoading) {
     return (
-      <div>
+      <div className="flex min-h-[400px] items-center justify-center">
         Loading forms...
       </div>
     )
@@ -40,25 +40,26 @@ function Forms() {
 
   if (isError) {
     return (
-      <div className="text-red-500">
-        Error: {error.message}
+      <div className="p-8 text-center text-sm text-destructive">
+        Failed to load forms.
       </div>
     )
   }
 
   return (
-    <div className="space-y-8">
+    <div className="p-8">
 
       {/* Header */}
-      <div className="flex items-center justify-between">
+
+      <div className="mb-8 flex items-center justify-between">
 
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">
+          <h1 className="text-2xl font-bold">
             Forms
           </h1>
 
-          <p className="mt-1 text-muted-foreground">
-            Create and manage your forms.
+          <p className="mt-1 text-sm text-muted-foreground">
+            Manage your forms.
           </p>
         </div>
 
@@ -71,17 +72,12 @@ function Forms() {
 
       </div>
 
-      {/* Forms */}
-      {forms?.length === 0 ? (
+      {/* Empty state */}
 
-        <div className="flex min-h-80 flex-col items-center justify-center rounded-xl border bg-card">
+      {forms.length === 0 ? (
+        <div className="rounded-xl border border-dashed p-12 text-center">
 
-          <FileText
-            size={40}
-            className="text-muted-foreground"
-          />
-
-          <h2 className="mt-4 text-lg font-semibold">
+          <h2 className="font-semibold">
             No forms yet
           </h2>
 
@@ -89,46 +85,56 @@ function Forms() {
             Create your first form to get started.
           </p>
 
-        </div>
+          <Button
+            className="mt-6"
+            asChild
+          >
+            <Link to="/forms/new">
+              <Plus />
+              Create Form
+            </Link>
+          </Button>
 
+        </div>
       ) : (
 
-        <div className="grid gap-4">
+        /* Form list */
 
-          {forms?.map((form) => (
+        <div className="overflow-hidden rounded-xl border">
 
+          {forms.map((form) => (
             <div
               key={form._id}
-              className="flex items-center justify-between rounded-xl border bg-card p-5"
+              className="flex items-center justify-between border-b p-5 last:border-b-0"
             >
 
-              <div className="flex items-center gap-4">
+              <div className="min-w-0">
 
-                <div className="rounded-lg border p-2">
-                  <FileText size={20} />
-                </div>
+                <h2 className="truncate font-semibold">
+                  {form.name}
+                </h2>
 
-                <div>
-                  <h2 className="font-semibold">
-                    {form.name}
-                  </h2>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  /{form.slug}
+                </p>
 
-                  <p className="text-sm text-muted-foreground">
-                    {form.fields?.length || 0} fields
-                  </p>
-
-                </div>
+                <p className="mt-2 text-xs text-muted-foreground">
+                  {form.fields?.length || 0} fields
+                </p>
 
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="ml-4 flex shrink-0 gap-2">
 
                 <Button
                   variant="outline"
+                  size="icon"
                   asChild
                 >
-                  <Link to={`/forms/${form._id}`}>
-                    Edit
+                  <Link
+                    to={`/forms/${form._id}/edit`}
+                  >
+                    <Pencil />
                   </Link>
                 </Button>
 
@@ -144,7 +150,7 @@ function Forms() {
               </div>
 
             </div>
-
+        
           ))}
 
         </div>

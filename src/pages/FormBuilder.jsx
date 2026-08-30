@@ -28,8 +28,8 @@ function FormBuilder() {
   const [fields, setFields] = useState([])
   const [activeField, setActiveField] = useState(null)
   const [selectedFieldId, setSelectedFieldId] = useState(null)
-  const [formName, setFormName] = useState('Untitled Form')
-  const [formSlug, setFormSlug] = useState('untitled-form')
+  const [formName, setFormName] = useState('')
+  const [formSlug, setFormSlug] = useState('')
   const selectedField = fields.find(
     (field) => field.id === selectedFieldId
   );
@@ -42,6 +42,7 @@ function FormBuilder() {
     isError: isFormError,
   } = useDynamicPageContentById(id)
   const saving = createMutation.isPending || updateMutation.isPending
+  const [slugManuallyEdited, setSlugManuallyEdited] = useState(false)
 
 
   useEffect(() => {
@@ -53,6 +54,28 @@ function FormBuilder() {
     setFormSlug(existingForm.slug || '')
     setFields(existingForm.fields || [])
   }, [existingForm])
+
+  function generateSlug(value) {
+    return value
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+  }
+
+  function handleFormNameChange(value) {
+    setFormName(value)
+
+    if (!slugManuallyEdited) {
+      setFormSlug(generateSlug(value))
+    }
+  }
+
+  function handleFormSlugChange(value) {
+    setSlugManuallyEdited(true)
+    setFormSlug(value)
+  }
 
   async function handleSave() {
     const formData = {
@@ -381,7 +404,7 @@ function FormBuilder() {
                   id="form-name"
                   value={formName}
                   onChange={(event) =>
-                    setFormName(event.target.value)
+                    handleFormNameChange(event.target.value)
                   }
                   placeholder="Contact Form"
                 />
