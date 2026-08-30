@@ -44,6 +44,20 @@ export async function createDynamicPageContent(data) {
   return response.json()
 }
 
+export async function getDynamicPageContentById(id) {
+  const response = await fetch(
+    `${API_BASE_URL}/dynamicPageContent/${id}`
+  )
+
+  if (!response.ok) {
+    throw new Error(
+      'Failed to fetch dynamic page content'
+    )
+  }
+
+  return response.json()
+}
+
 export async function updateDynamicPageContent(id, data) {
   const response = await fetch(
     `${API_BASE_URL}/dynamicPageContent/${id}`,

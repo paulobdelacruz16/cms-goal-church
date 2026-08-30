@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { ArrowLeft, Save } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import {
@@ -19,22 +19,40 @@ import FormCanvas from '@/components/form-builder/FormCanvas'
 import FieldProperties from '@/components/form-builder/FieldProperties'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-
+import { useParams } from 'react-router-dom'
 // import { createDynamicPageContent } from '@/api/dynamicPageContent'
-import { useCreateDynamicPageContent } from '@/hooks/useDynamicPageContent'
+import { useCreateDynamicPageContent, useDynamicPageContentById, useUpdateDynamicPageContent } from '@/hooks/useDynamicPageContent'
+
 
 function FormBuilder() {
   const [fields, setFields] = useState([])
   const [activeField, setActiveField] = useState(null)
   const [selectedFieldId, setSelectedFieldId] = useState(null)
-  const [saving, setSaving] = useState(false)
   const [formName, setFormName] = useState('Untitled Form')
   const [formSlug, setFormSlug] = useState('untitled-form')
   const selectedField = fields.find(
     (field) => field.id === selectedFieldId
   );
   const createMutation = useCreateDynamicPageContent()
+  const updateMutation = useUpdateDynamicPageContent()
+  const { id } = useParams()
+  const {
+    data: existingForm,
+    isLoading: isLoadingForm,
+    isError: isFormError,
+  } = useDynamicPageContentById(id)
+  const saving = createMutation.isPending || updateMutation.isPending
 
+
+  useEffect(() => {
+    if (!existingForm) {
+      return
+    }
+
+    setFormName(existingForm.name || '')
+    setFormSlug(existingForm.slug || '')
+    setFields(existingForm.fields || [])
+  }, [existingForm])
 
   async function handleSave() {
     const formData = {
@@ -44,13 +62,31 @@ function FormBuilder() {
     }
 
     try {
+      if (id) {
+        const result =
+          await updateMutation.mutateAsync({
+            id,
+            data: formData,
+          })
+
+        console.log(
+          'Form updated:',
+          result
+        )
+
+        return
+      }
+
       const result =
-        await createMutation.mutateAsync(formData)
+        await createMutation.mutateAsync(
+          formData
+        )
 
       console.log(
         'Form created:',
         result
       )
+
     } catch (error) {
       console.error(
         'Failed to save form:',
@@ -215,7 +251,24 @@ function FormBuilder() {
     setActiveField(null)
   }
 
+  if (id && isLoadingForm) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        Loading form...
+      </div>
+    )
+  }
+
+  if (id && isFormError) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        Failed to load form.
+      </div>
+    )
+  }
+
   return (
+
     <div className="flex h-[calc(100vh-2rem)] flex-col">
 
       {/* Header */}
@@ -247,11 +300,11 @@ function FormBuilder() {
 
         <Button
           onClick={handleSave}
-          disabled={createMutation.isPending}
+          disabled={saving}
         >
           <Save />
 
-          {createMutation.isPending
+          {saving
             ? 'Saving...'
             : 'Save Form'}
         </Button>

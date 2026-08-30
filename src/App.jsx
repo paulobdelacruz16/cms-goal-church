@@ -55,6 +55,11 @@ function App() {
             element={<Submissions />}
           />
 
+          <Route
+            path="/forms/:id/edit"
+            element={<FormBuilder />}
+          />
+
         </Route>
 
       </Routes>
