@@ -2,6 +2,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Button } from '@/components/ui/button'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Plus, Trash2, GripVertical } from 'lucide-react'
 
 import {
@@ -418,6 +419,100 @@ function FieldProperties({
           </div>
         )}
 
+      {/* Help Text */}
+      <div className="space-y-2">
+
+        <Label htmlFor="field-help-text">
+          Help Text
+        </Label>
+
+        <Input
+          id="field-help-text"
+          value={field.helpText || ''}
+          placeholder="Optional description..."
+          onChange={(event) =>
+            updateField(
+              'helpText',
+              event.target.value
+            )
+          }
+        />
+
+        <p className="text-xs text-muted-foreground">
+          Optional text displayed below the field.
+        </p>
+
+      </div>
+
+      {/* Field Width */}
+      <div className="space-y-3">
+
+        <div>
+          <Label>
+            Width
+          </Label>
+
+          <p className="mt-1 text-xs text-muted-foreground">
+            Choose how much horizontal space this field uses.
+          </p>
+        </div>
+
+        <RadioGroup
+          value={field.width || 'full'}
+          onValueChange={(value) =>
+            updateField(
+              'width',
+              value
+            )
+          }
+          className="space-y-2"
+        >
+
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem
+              value="full"
+              id="width-full"
+            />
+
+            <Label
+              htmlFor="width-full"
+              className="font-normal"
+            >
+              Full
+            </Label>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem
+              value="half"
+              id="width-half"
+            />
+
+            <Label
+              htmlFor="width-half"
+              className="font-normal"
+            >
+              Half
+            </Label>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem
+              value="third"
+              id="width-third"
+            />
+
+            <Label
+              htmlFor="width-third"
+              className="font-normal"
+            >
+              Third
+            </Label>
+          </div>
+
+        </RadioGroup>
+
+      </div>
 
       {/* Required */}
       <div className="flex items-center justify-between">
@@ -581,6 +676,35 @@ function FieldProperties({
               }}
             />
           </div>
+
+        </div>
+      )}
+
+      {/* Validation Error Message */}
+      {field.required && (
+        <div className="space-y-2">
+
+          <Label htmlFor="field-error-message">
+            Error Message
+          </Label>
+
+          <Input
+            id="field-error-message"
+            value={
+              field.validation?.message || ''
+            }
+            placeholder="This field is required."
+            onChange={(event) => {
+              updateField('validation', {
+                ...(field.validation || {}),
+                message: event.target.value,
+              })
+            }}
+          />
+
+          <p className="text-xs text-muted-foreground">
+            Message shown when this field fails validation.
+          </p>
 
         </div>
       )}
