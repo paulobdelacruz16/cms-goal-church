@@ -28,8 +28,8 @@ function FormBuilder() {
   const [fields, setFields] = useState([])
   const [activeField, setActiveField] = useState(null)
   const [selectedFieldId, setSelectedFieldId] = useState(null)
-  const [formName, setFormName] = useState('')
-  const [formSlug, setFormSlug] = useState('')
+  const [formName, setFormName] = useState('Untitled Form')
+  const [formSlug, setFormSlug] = useState('untitled-form')
   const selectedField = fields.find(
     (field) => field.id === selectedFieldId
   );
@@ -43,8 +43,6 @@ function FormBuilder() {
   } = useDynamicPageContentById(id)
   const saving = createMutation.isPending || updateMutation.isPending
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false)
-
-
   useEffect(() => {
     if (!existingForm) {
       return

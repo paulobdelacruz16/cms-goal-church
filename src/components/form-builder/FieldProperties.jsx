@@ -1,6 +1,7 @@
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
+import { Button } from '@/components/ui/button'
 
 function FieldProperties({
   field,
@@ -21,19 +22,49 @@ function FieldProperties({
     })
   }
 
+  function handleOptionChange(
+    index,
+    property,
+    value
+  ) {
+    const options = [...(field.options || [])]
+
+    options[index] = {
+      ...options[index],
+      [property]: value,
+    }
+
+    updateField('options', options)
+  }
+
+  function handleAddOption() {
+    const options = [
+      ...(field.options || []),
+    ]
+
+    const optionNumber =
+      options.length + 1
+
+    options.push({
+      label: `Option ${optionNumber}`,
+      value: `option-${optionNumber}`,
+    })
+
+    updateField('options', options)
+  }
+
+  function handleDeleteOption(index) {
+    const options = [
+      ...(field.options || []),
+    ]
+
+    options.splice(index, 1)
+
+    updateField('options', options)
+  }
+
   return (
     <div className="mt-6 space-y-6">
-
-      {/* Type */}
-      <div className="space-y-2">
-        <Label>
-          Field Type
-        </Label>
-
-        <div className="rounded-md border bg-muted/30 px-3 py-2 text-sm">
-          {field.type}
-        </div>
-      </div>
 
       {/* Label */}
       <div className="space-y-2">
@@ -43,7 +74,7 @@ function FieldProperties({
 
         <Input
           id="field-label"
-          value={field.label}
+          value={field.label || ''}
           onChange={(event) =>
             updateField(
               'label',
@@ -61,7 +92,7 @@ function FieldProperties({
 
         <Input
           id="field-name"
-          value={field.name}
+          value={field.name || ''}
           onChange={(event) =>
             updateField(
               'name',
@@ -69,45 +100,38 @@ function FieldProperties({
             )
           }
         />
-
-        <p className="text-xs text-muted-foreground">
-          Used as the field name when submitting the form.
-        </p>
       </div>
 
       {/* Placeholder */}
-      <div className="space-y-2">
-        <Label htmlFor="field-placeholder">
-          Placeholder
-        </Label>
+      {field.type !== 'checkbox' &&
+        field.type !== 'radio' && (
+          <div className="space-y-2">
+            <Label htmlFor="field-placeholder">
+              Placeholder
+            </Label>
 
-        <Input
-          id="field-placeholder"
-          value={field.placeholder ?? ''}
-          onChange={(event) =>
-            updateField(
-              'placeholder',
-              event.target.value
-            )
-          }
-        />
-      </div>
+            <Input
+              id="field-placeholder"
+              value={field.placeholder || ''}
+              onChange={(event) =>
+                updateField(
+                  'placeholder',
+                  event.target.value
+                )
+              }
+            />
+          </div>
+        )}
 
       {/* Required */}
-      <div className="flex items-center justify-between rounded-lg border p-4">
-
-        <div>
-          <Label>
-            Required
-          </Label>
-
-          <p className="text-xs text-muted-foreground">
-            User must complete this field.
-          </p>
-        </div>
+      <div className="flex items-center justify-between">
+        <Label htmlFor="field-required">
+          Required
+        </Label>
 
         <Switch
-          checked={field.required}
+          id="field-required"
+          checked={Boolean(field.required)}
           onCheckedChange={(value) =>
             updateField(
               'required',
@@ -115,8 +139,73 @@ function FieldProperties({
             )
           }
         />
-
       </div>
+
+      {/* Options */}
+      {(field.type === 'select' ||
+        field.type === 'radio') && (
+        <div className="space-y-4">
+
+          <div>
+            <h3 className="text-sm font-medium">
+              Options
+            </h3>
+
+            <p className="mt-1 text-xs text-muted-foreground">
+              Add and edit the choices available to users.
+            </p>
+          </div>
+
+          <div className="space-y-3">
+
+            {(field.options || []).map(
+              (option, index) => (
+                <div
+                  key={`${field.id}-${index}`}
+                  className="flex items-center gap-2"
+                >
+
+                  <Input
+                    value={option.label}
+                    onChange={(event) =>
+                      handleOptionChange(
+                        index,
+                        'label',
+                        event.target.value
+                      )
+                    }
+                    placeholder="Label"
+                  />
+
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() =>
+                      handleDeleteOption(index)
+                    }
+                    className="shrink-0"
+                  >
+                    ×
+                  </Button>
+
+                </div>
+              )
+            )}
+
+          </div>
+
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full"
+            onClick={handleAddOption}
+          >
+            + Add Option
+          </Button>
+
+        </div>
+      )}
 
     </div>
   )
