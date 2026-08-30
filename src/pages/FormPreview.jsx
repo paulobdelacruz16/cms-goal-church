@@ -3,6 +3,22 @@ import { useParams } from 'react-router-dom'
 
 import { getDynamicPageContentById } from '@/api/dynamicPageContent'
 
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import { Checkbox } from '@/components/ui/checkbox'
+import {
+  RadioGroup,
+  RadioGroupItem,
+} from '@/components/ui/radio-group'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+
 function FormPreview() {
   const { id } = useParams()
 
@@ -70,16 +86,152 @@ function FormPreview() {
   }
 
   return (
-    <div className="p-8">
-      <h1 className="text-3xl font-bold">
-        {form.name}
-      </h1>
+    <div className="mx-auto max-w-2xl p-8">
 
-      <p className="mt-2 text-muted-foreground">
-        Form Preview
-      </p>
+      <div className="rounded-xl border bg-background p-8 shadow-sm">
+
+        <h1 className="text-3xl font-bold">
+          {form.name}
+        </h1>
+
+        <p className="mt-2 text-sm text-muted-foreground">
+          Form Preview
+        </p>
+
+        <div className="mt-8 space-y-6">
+
+          {form.fields.map((field) => (
+            <PreviewField
+              key={field.id}
+              field={field}
+            />
+          ))}
+
+        </div>
+
+      </div>
+
     </div>
   )
 }
+
+function PreviewField({ field }) {
+  const inputId = `preview-${field.id}`
+
+  return (
+    <div className="space-y-2">
+
+      <Label htmlFor={inputId}>
+        {field.label}
+
+        {field.required && (
+          <span className="ml-1 text-destructive">
+            *
+          </span>
+        )}
+      </Label>
+
+      {field.type === 'text' && (
+        <Input
+          id={inputId}
+          type="text"
+          placeholder={field.placeholder || ''}
+          disabled
+        />
+      )}
+
+      {field.type === 'email' && (
+        <Input
+          id={inputId}
+          type="email"
+          placeholder={field.placeholder || ''}
+          disabled
+        />
+      )}
+
+      {field.type === 'number' && (
+        <Input
+          id={inputId}
+          type="number"
+          placeholder={field.placeholder || ''}
+          disabled
+        />
+      )}
+
+      {field.type === 'textarea' && (
+        <Textarea
+          id={inputId}
+          placeholder={field.placeholder || ''}
+          disabled
+        />
+      )}
+
+      {field.type === 'select' && (
+        <Select disabled>
+          <SelectTrigger id={inputId}>
+            <SelectValue placeholder={field.placeholder || 'Select an option'} />
+          </SelectTrigger>
+
+          <SelectContent>
+            {(field.options || []).map((option) => (
+              <SelectItem
+                key={option.value}
+                value={option.value}
+              >
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
+
+      {field.type === 'radio' && (
+        <RadioGroup disabled>
+          {(field.options || []).map((option) => (
+            <div
+              key={option.value}
+              className="flex items-center gap-2"
+            >
+              <RadioGroupItem
+                value={option.value}
+                id={`${inputId}-${option.value}`}
+              />
+
+              <Label
+                htmlFor={`${inputId}-${option.value}`}
+              >
+                {option.label}
+              </Label>
+            </div>
+          ))}
+        </RadioGroup>
+      )}
+
+      {field.type === 'checkbox' && (
+        <div className="flex items-center gap-2">
+          <Checkbox
+            id={inputId}
+            disabled
+          />
+
+          <Label htmlFor={inputId}>
+            {field.label}
+          </Label>
+        </div>
+      )}
+
+      {field.type === 'date' && (
+        <Input
+          id={inputId}
+          type="date"
+          disabled
+        />
+      )}
+
+    </div>
+  )
+}
+
+
 
 export default FormPreview
