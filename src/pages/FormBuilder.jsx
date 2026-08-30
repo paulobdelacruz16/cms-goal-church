@@ -18,14 +18,41 @@ import FieldPalette from '@/components/form-builder/FieldPalette'
 import FormCanvas from '@/components/form-builder/FormCanvas'
 import FieldProperties from '@/components/form-builder/FieldProperties'
 
+// import { createDynamicPageContent } from '@/api/dynamicPageContent'
+import { useCreateDynamicPageContent } from '@/hooks/useDynamicPageContent'
+
 function FormBuilder() {
   const [fields, setFields] = useState([])
   const [activeField, setActiveField] = useState(null)
   const [selectedFieldId, setSelectedFieldId] = useState(null)
-
+  const [saving, setSaving] = useState(false)
   const selectedField = fields.find(
     (field) => field.id === selectedFieldId
   );
+  const createMutation = useCreateDynamicPageContent()
+
+  async function handleSave() {
+    const formData = {
+      name: 'Untitled Form',
+      slug: 'untitled-form',
+      fields,
+    }
+
+    try {
+      const result =
+        await createMutation.mutateAsync(formData)
+
+      console.log(
+        'Form created:',
+        result
+      )
+    } catch (error) {
+      console.error(
+        'Failed to save form:',
+        error
+      )
+    }
+  }
 
   function handleDragEnd(event) {
     const { active, over } = event
@@ -213,9 +240,15 @@ function FormBuilder() {
 
         </div>
 
-        <Button>
+        <Button
+          onClick={handleSave}
+          disabled={createMutation.isPending}
+        >
           <Save />
-          Save Form
+
+          {createMutation.isPending
+            ? 'Saving...'
+            : 'Save Form'}
         </Button>
 
       </header>

@@ -6,7 +6,7 @@ import {
 
 import {
   getDynamicPageContent,
-  getDynamicPageContentById,
+  // getDynamicPageContentById,
   createDynamicPageContent,
   updateDynamicPageContent,
   deleteDynamicPageContent,
@@ -19,13 +19,13 @@ export function useDynamicPageContent() {
   })
 }
 
-export function useDynamicPageContentById(id) {
-  return useQuery({
-    queryKey: ['dynamicPageContent', id],
-    queryFn: () => getDynamicPageContentById(id),
-    enabled: Boolean(id),
-  })
-}
+// export function useDynamicPageContentById(id) {
+//   return useQuery({
+//     queryKey: ['dynamicPageContent', id],
+//     queryFn: () => getDynamicPageContentById(id),
+//     enabled: Boolean(id),
+//   })
+// }
 
 export function useCreateDynamicPageContent() {
   const queryClient = useQueryClient()

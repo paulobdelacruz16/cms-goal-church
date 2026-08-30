@@ -1,31 +1,79 @@
-import { apiFetch } from './client'
+const API_BASE_URL = import.meta.env.VITE_API_URL
 
-const ENDPOINT = '/api/dynamicPageContent'
+export async function getDynamicPageContents() {
+  const response = await fetch(
+    `${API_BASE_URL}/dynamicPageContent`
+  )
 
-export function getDynamicPageContent() {
-  return apiFetch(ENDPOINT)
+  if (!response.ok) {
+    throw new Error('Failed to fetch dynamic page contents')
+  }
+
+  return response.json()
 }
 
-export function getDynamicPageContentById(id) {
-  return apiFetch(`${ENDPOINT}/${id}`)
+export async function getDynamicPageContent(id) {
+  const response = await fetch(
+    `${API_BASE_URL}/dynamicPageContent`
+  )
+
+  if (!response.ok) {
+    throw new Error('Failed to fetch dynamic page content')
+  }
+
+  return response.json()
 }
 
-export function createDynamicPageContent(data) {
-  return apiFetch(ENDPOINT, {
-    method: 'POST',
-    body: JSON.stringify(data),
-  })
+export async function createDynamicPageContent(data) {
+  console.log('Creating dynamic page content with data:', data);
+  const response = await fetch(
+    `${API_BASE_URL}/dynamicPageContent`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    }
+  )
+
+  if (!response.ok) {
+    throw new Error('Failed to create dynamic page content')
+  }
+
+  return response.json()
 }
 
-export function updateDynamicPageContent(id, data) {
-  return apiFetch(`${ENDPOINT}/${id}`, {
-    method: 'PUT',
-    body: JSON.stringify(data),
-  })
+export async function updateDynamicPageContent(id, data) {
+  const response = await fetch(
+    `${API_BASE_URL}/dynamicPageContent/${id}`,
+    {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    }
+  )
+
+  if (!response.ok) {
+    throw new Error('Failed to update dynamic page content')
+  }
+
+  return response.json()
 }
 
-export function deleteDynamicPageContent(id) {
-  return apiFetch(`${ENDPOINT}/${id}`, {
-    method: 'DELETE',
-  })
+export async function deleteDynamicPageContent(id) {
+  const response = await fetch(
+    `${API_BASE_URL}/dynamicPageContent/${id}`,
+    {
+      method: 'DELETE',
+    }
+  )
+
+  if (!response.ok) {
+    throw new Error('Failed to delete dynamic page content')
+  }
+
+  return response.json()
 }
