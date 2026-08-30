@@ -17,6 +17,8 @@ import { createField } from '@/lib/form-fields'
 import FieldPalette from '@/components/form-builder/FieldPalette'
 import FormCanvas from '@/components/form-builder/FormCanvas'
 import FieldProperties from '@/components/form-builder/FieldProperties'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 
 // import { createDynamicPageContent } from '@/api/dynamicPageContent'
 import { useCreateDynamicPageContent } from '@/hooks/useDynamicPageContent'
@@ -26,15 +28,18 @@ function FormBuilder() {
   const [activeField, setActiveField] = useState(null)
   const [selectedFieldId, setSelectedFieldId] = useState(null)
   const [saving, setSaving] = useState(false)
+  const [formName, setFormName] = useState('Untitled Form')
+  const [formSlug, setFormSlug] = useState('untitled-form')
   const selectedField = fields.find(
     (field) => field.id === selectedFieldId
   );
   const createMutation = useCreateDynamicPageContent()
 
+
   async function handleSave() {
     const formData = {
-      name: 'Untitled Form',
-      slug: 'untitled-form',
+      name: formName,
+      slug: formSlug,
       fields,
     }
 
@@ -282,7 +287,7 @@ function FormBuilder() {
               <div className="rounded-xl border bg-background p-8 shadow-sm">
 
                 <h2 className="text-2xl font-bold">
-                  Untitled Form
+                  {formName}
                 </h2>
 
                 <p className="mt-1 text-sm text-muted-foreground">
@@ -309,13 +314,55 @@ function FormBuilder() {
           <aside className="min-w-0 overflow-x-hidden overflow-y-auto border-l p-4">
 
             <h2 className="text-sm font-semibold">
-              Properties
+              Form Settings
             </h2>
 
-            <FieldProperties
-              field={selectedField}
-              onChange={handleFieldChange}
-            />
+            <div className="mt-6 space-y-4">
+
+              <div className="space-y-2">
+                <Label htmlFor="form-name">
+                  Form Name
+                </Label>
+
+                <Input
+                  id="form-name"
+                  value={formName}
+                  onChange={(event) =>
+                    setFormName(event.target.value)
+                  }
+                  placeholder="Contact Form"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="form-slug">
+                  Slug
+                </Label>
+
+                <Input
+                  id="form-slug"
+                  value={formSlug}
+                  onChange={(event) =>
+                    setFormSlug(event.target.value)
+                  }
+                  placeholder="contact-form"
+                />
+              </div>
+
+            </div>
+
+            <div className="mt-8 border-t pt-6">
+
+              <h2 className="text-sm font-semibold">
+                Field Properties
+              </h2>
+
+              <FieldProperties
+                field={selectedField}
+                onChange={handleFieldChange}
+              />
+
+            </div>
 
           </aside>
 
