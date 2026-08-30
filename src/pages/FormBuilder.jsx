@@ -22,7 +22,7 @@ import { Label } from '@/components/ui/label'
 import { useParams } from 'react-router-dom'
 // import { createDynamicPageContent } from '@/api/dynamicPageContent'
 import { useCreateDynamicPageContent, useDynamicPageContentById, useUpdateDynamicPageContent } from '@/hooks/useDynamicPageContent'
-
+import FormSettings from '@/components/form-builder/FormSettings'
 
 function FormBuilder() {
   const [fields, setFields] = useState([])
@@ -43,6 +43,18 @@ function FormBuilder() {
   } = useDynamicPageContentById(id)
   const saving = createMutation.isPending || updateMutation.isPending
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false)
+
+  const [formDescription, setFormDescription] = useState(
+    'Build your form below.'
+  )
+  const [submitButtonText, setSubmitButtonText] = useState('Submit')
+  const [successMessage, setSuccessMessage] = useState(
+    'Thank you! Your response has been submitted.'
+  )
+
+
+
+
   useEffect(() => {
     if (!existingForm) {
       return
@@ -79,6 +91,9 @@ function FormBuilder() {
     const formData = {
       name: formName,
       slug: formSlug,
+      description: formDescription,
+      submitButtonText,
+      successMessage,
       fields,
     }
 
@@ -364,9 +379,11 @@ function FormBuilder() {
                   {formName}
                 </h2>
 
-                <p className="mt-1 text-sm text-muted-foreground">
-                  Build your form below.
-                </p>
+                {formDescription && (
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    {formDescription}
+                  </p>
+                )}
 
                 <div className="mt-8">
                   <FormCanvas
@@ -391,6 +408,7 @@ function FormBuilder() {
               Form Settings
             </h2>
 
+            {/* Form Name + Slug */}
             <div className="mt-6 space-y-4">
 
               <div className="space-y-2">
@@ -402,7 +420,9 @@ function FormBuilder() {
                   id="form-name"
                   value={formName}
                   onChange={(event) =>
-                    handleFormNameChange(event.target.value)
+                    handleFormNameChange(
+                      event.target.value
+                    )
                   }
                   placeholder="Contact Form"
                 />
@@ -417,7 +437,9 @@ function FormBuilder() {
                   id="form-slug"
                   value={formSlug}
                   onChange={(event) =>
-                    setFormSlug(event.target.value)
+                    handleFormSlugChange(
+                      event.target.value
+                    )
                   }
                   placeholder="contact-form"
                 />
@@ -425,18 +447,37 @@ function FormBuilder() {
 
             </div>
 
-            <div className="mt-8 border-t pt-6">
+            {/* Other Form Settings */}
+            <FormSettings
+              formDescription={formDescription}
+              submitButtonText={submitButtonText}
+              successMessage={successMessage}
+              onFormDescriptionChange={
+                setFormDescription
+              }
+              onSubmitButtonTextChange={
+                setSubmitButtonText
+              }
+              onSuccessMessageChange={
+                setSuccessMessage
+              }
+            />
 
-              <h2 className="text-sm font-semibold">
-                Field Properties
-              </h2>
+            {/* Field Properties */}
+            {selectedField && (
+              <div className="mt-8 border-t pt-6">
 
-              <FieldProperties
-                field={selectedField}
-                onChange={handleFieldChange}
-              />
+                <h2 className="text-sm font-semibold">
+                  Field Properties
+                </h2>
 
-            </div>
+                <FieldProperties
+                  field={selectedField}
+                  onChange={handleFieldChange}
+                />
+
+              </div>
+            )}
 
           </aside>
 

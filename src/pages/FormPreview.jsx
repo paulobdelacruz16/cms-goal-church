@@ -105,6 +105,12 @@ function FormPreview() {
             <h1 className="mt-1 text-2xl font-bold">
               {form.name}
             </h1>
+
+            {form.description && (
+              <p className="mt-2 text-sm text-muted-foreground">
+                {form.description}
+              </p>
+            )}
           </div>
 
           <Button asChild variant="outline">
@@ -140,7 +146,7 @@ function FormPreview() {
           {form.fields?.length > 0 && (
             <div className="mt-8 border-t pt-6">
               <Button disabled>
-                Submit
+                {form.submitButtonText || 'Submit'}
               </Button>
             </div>
           )}
