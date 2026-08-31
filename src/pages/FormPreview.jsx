@@ -4,7 +4,7 @@ import { ArrowLeft, History } from 'lucide-react'
 
 import {
   createFormData,
-  getLatestFormData,
+  getFormDataByFormId,
   updateFormData,
 } from '@/api/formdata'
 
@@ -44,6 +44,8 @@ function FormPreview() {
   const [submitted, setSubmitted] = useState(false)
   const [submitError, setSubmitError] = useState(null)
 
+  const [submission, setSubmission] = useState(null)
+
   const [latestSubmission, setLatestSubmission] =
     useState(null)
 
@@ -55,17 +57,29 @@ function FormPreview() {
 
         const [
           formData,
-          latestData,
+          submissionData,
         ] = await Promise.all([
           getFormTemplateById(id),
-          getLatestFormData(),
+          getFormDataByFormId(id),
         ])
 
         setForm(formData)
 
-        if (latestData) {
-          setLatestSubmission(latestData)
-          setValues(latestData.data || {})
+        const latestSubmission =
+          [...submissionData].sort(
+            (a, b) =>
+              new Date(b.submittedAt) -
+              new Date(a.submittedAt)
+          )[0] || null
+
+        if (latestSubmission) {
+          setLatestSubmission(
+            latestSubmission
+          )
+
+          setValues(
+            latestSubmission.data || {}
+          )
         } else {
           setLatestSubmission(null)
           setValues({})
@@ -149,16 +163,7 @@ function FormPreview() {
         submittedAt: new Date().toISOString(),
       }
 
-      let result
-
-      if (latestSubmission?._id) {
-        result = await updateFormData(
-          latestSubmission._id,
-          data
-        )
-      } else {
-        result = await createFormData(data)
-      }
+      let result =  await createFormData(data)
 
       setLatestSubmission(result)
       setValues(result.data || values)
@@ -321,7 +326,7 @@ function FormPreview() {
               {isUpdateMode
                 ? 'Your response has been updated.'
                 : form.successMessage ||
-                  'Thank you! Your response has been submitted.'}
+                'Thank you! Your response has been submitted.'}
             </div>
           )}
 
