@@ -12,6 +12,7 @@ import FormBuilder from './pages/FormBuilder'
 import FormPreview from './pages/FormPreview'
 import Login from './pages/Login'
 import Submissions from './pages/Submissions'
+import FormHistory from './pages/FormHistory'
 
 function App() {
   return (
@@ -47,11 +48,22 @@ function App() {
             path="/forms/submissions"
             element={<Submissions />}
           />
+          <Route
+            path="/forms/:id/history"
+            element={<FormHistory />}
+          />
+
+          <Route
+            path="/forms/:id/history/:formdataId"
+            element={<FormHistory />}
+          />
 
           <Route
             path="/forms/:id"
             element={<FormBuilder />}
           />
+
+
 
           <Route
             path="/forms/:id/edit"

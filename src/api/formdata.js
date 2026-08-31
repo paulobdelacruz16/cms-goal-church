@@ -49,10 +49,12 @@ export async function getLatestFormData() {
   return response.json()
 }
 
-
-export async function updateFormData(id, data) {
+export async function updateFormData(
+  id,
+  data
+) {
   const response = await fetch(
-    `${API_BASE_URL}/formdata/${id}`,
+    `${API_BASE_URL}/formdata/formid/${id}`,
     {
       method: 'PUT',
       headers: {
@@ -63,8 +65,25 @@ export async function updateFormData(id, data) {
   )
 
   if (!response.ok) {
-    throw new Error('Failed to update form template')
+    throw new Error(
+      'Failed to update form data'
+    )
   }
 
   return response.json()
 }
+
+export async function getFormDataByFormId(formId) {
+  const response = await fetch(
+    `${API_BASE_URL}/formdata/formid/${formId}`
+  )
+
+  if (!response.ok) {
+    throw new Error(
+      'Failed to fetch form history'
+    )
+  }
+
+  return response.json()
+}
+
