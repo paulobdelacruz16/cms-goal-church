@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
-import { Eye, X } from 'lucide-react'
+import { Eye, Pencil } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 
-import { getFormData } from '@/api/formdata'
+import {
+  getLatestFormData,
+} from '@/api/formdata'
+
 import {
   getFormTemplateById,
 } from '@/api/formtemplate'
@@ -10,14 +13,19 @@ import {
 import { Button } from '@/components/ui/button'
 
 function Submissions() {
-  const { id: formId } = useParams()
+  const navigate = useNavigate()
 
-  const [submissions, setSubmissions] = useState([])
-  const [form, setForm] = useState(null)
-  const [selectedSubmission, setSelectedSubmission] =
+  const [submissions, setSubmissions] =
+    useState([])
+
+  const [forms, setForms] =
+    useState({})
+
+  const [loading, setLoading] =
+    useState(true)
+
+  const [error, setError] =
     useState(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
 
   useEffect(() => {
     async function loadSubmissions() {
@@ -25,22 +33,48 @@ function Submissions() {
         setLoading(true)
         setError(null)
 
-        const [
-          submissionData,
-          formData,
-        ] = await Promise.all([
-          getFormData(),
-          getFormTemplateById(formId),
-        ])
+        const submissionData =
+          await getLatestFormData()
 
-        const filteredSubmissions =
-          submissionData.filter(
-            (submission) =>
-              submission.formId === formId
+        setSubmissions(
+          submissionData
+        )
+
+        const uniqueFormIds = [
+          ...new Set(
+            submissionData.map(
+              (submission) =>
+                submission.formId
+            )
+          ),
+        ]
+
+        const formResults =
+          await Promise.all(
+            uniqueFormIds.map(
+              async (formId) => {
+                const form =
+                  await getFormTemplateById(
+                    formId
+                  )
+
+                return {
+                  formId,
+                  form,
+                }
+              }
+            )
           )
 
-        setSubmissions(filteredSubmissions)
-        setForm(formData)
+        const formMap = {}
+
+        formResults.forEach(
+          ({ formId, form }) => {
+            formMap[formId] = form
+          }
+        )
+
+        setForms(formMap)
       } catch (error) {
         console.error(
           'Failed to load submissions:',
@@ -55,26 +89,34 @@ function Submissions() {
       }
     }
 
-    if (formId) {
-      loadSubmissions()
-    }
-  }, [formId])
+    loadSubmissions()
+  }, [])
 
-  function getFieldLabel(fieldName) {
-    const field = form?.fields?.find(
-      (field) =>
-        field.name === fieldName
+  function getFormName(formId) {
+    return (
+      forms[formId]?.name ||
+      'Unknown Form'
     )
-
-    return field?.label || fieldName
   }
 
-  function handleViewSubmission(submission) {
-    setSelectedSubmission(submission)
-  }
+  function getPreviewFields(
+    submission
+  ) {
+    const form =
+      forms[submission.formId]
 
-  function handleCloseSubmission() {
-    setSelectedSubmission(null)
+    if (!form?.fields) {
+      return []
+    }
+
+    return form.fields
+      .filter((field) =>
+        Object.prototype.hasOwnProperty.call(
+          submission.data || {},
+          field.name
+        )
+      )
+      .slice(0, 3)
   }
 
   if (loading) {
@@ -115,14 +157,11 @@ function Submissions() {
         </h1>
 
         <p className="mt-1 text-sm text-muted-foreground">
-          {submissions.length} submission
-          {submissions.length !== 1
-            ? 's'
-            : ''}
+          Latest submission for each form
         </p>
       </div>
 
-      {/* Submission List */}
+      {/* Empty */}
       {submissions.length === 0 ? (
         <div className="mt-8 rounded-lg border border-dashed p-12 text-center">
           <p className="font-medium">
@@ -134,106 +173,114 @@ function Submissions() {
           </p>
         </div>
       ) : (
-        <div className="mt-8 space-y-4">
 
-          {submissions.map(
-            (submission) => (
-              <div
-                key={submission._id}
-                className="rounded-lg border bg-background p-5"
-              >
+        /* List */
+        <div className="mt-8 overflow-hidden rounded-lg border">
 
-                <div className="flex items-center justify-between">
-
-                  <div>
-                    <p className="text-sm font-medium">
-                      Submission
-                    </p>
-
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      {new Date(
-                        submission.submittedAt
-                      ).toLocaleString()}
-                    </p>
-                  </div>
-
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() =>
-                      handleViewSubmission(
-                        submission
-                      )
-                    }
-                  >
-                    <Eye />
-                    View
-                  </Button>
-
-                </div>
-
-              </div>
-            )
-          )}
-
-        </div>
-      )}
-
-      {/* Submission Details */}
-      {selectedSubmission && (
-        <div className="mt-8 rounded-xl border bg-background p-6 shadow-sm">
-
-          <div className="mb-6 flex items-center justify-between border-b pb-4">
+          {/* Header */}
+          <div className="grid grid-cols-[180px_180px_1fr_160px] border-b bg-muted/50 px-5 py-3 text-sm font-medium">
 
             <div>
-              <h2 className="text-lg font-semibold">
-                Submission Details
-              </h2>
-
-              <p className="mt-1 text-xs text-muted-foreground">
-                {new Date(
-                  selectedSubmission.submittedAt
-                ).toLocaleString()}
-              </p>
+              Form
             </div>
 
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              onClick={
-                handleCloseSubmission
-              }
-              title="Close"
-            >
-              <X />
-            </Button>
+            <div>
+              Submitted
+            </div>
+
+            <div>
+              Data
+            </div>
+
+            <div className="text-right">
+              Actions
+            </div>
 
           </div>
 
-          <div className="space-y-4">
+          {/* Rows */}
+          {submissions.map(
+            (submission) => {
+              const previewFields =
+                getPreviewFields(
+                  submission
+                )
 
-            {Object.entries(
-              selectedSubmission.data || {}
-            ).map(
-              ([key, value]) => (
+              return (
                 <div
-                  key={key}
-                  className="grid grid-cols-[160px_1fr] gap-4 rounded-lg border p-4"
+                  key={submission._id}
+                  className="grid grid-cols-[180px_180px_1fr_160px] items-center border-b px-5 py-4 last:border-b-0"
                 >
-                  <div className="text-sm font-medium text-muted-foreground">
-                    {getFieldLabel(key)}
+
+                  {/* Form */}
+                  <div className="text-sm font-medium">
+                    {getFormName(
+                      submission.formId
+                    )}
                   </div>
 
-                  <div className="break-words text-sm">
-                    {String(value)}
+                  {/* Submitted */}
+                  <div className="text-sm text-muted-foreground">
+                    {new Date(
+                      submission.submittedAt
+                    ).toLocaleString()}
                   </div>
+
+                  {/* Data */}
+                  <div className="min-w-0 space-y-1">
+
+                    {previewFields.length > 0 ? (
+                      previewFields.map(
+                        (field) => (
+                          <div
+                            key={field.name}
+                            className="flex gap-2 text-sm"
+                          >
+                            <span className="font-medium">
+                              {field.label}:
+                            </span>
+
+                            <span className="truncate text-muted-foreground">
+                              {String(
+                                submission.data?.[
+                                  field.name
+                                ] ?? ''
+                              )}
+                            </span>
+                          </div>
+                        )
+                      )
+                    ) : (
+                      <span className="text-sm text-muted-foreground">
+                        No data
+                      </span>
+                    )}
+
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex justify-end gap-2">
+
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() =>
+                        navigate(
+                          `/forms/${submission.formId}/preview`
+                        )
+                      }
+                    >
+                      <Pencil />
+                      Edit
+                    </Button>
+
+                  </div>
+
                 </div>
               )
-            )}
-
-          </div>
+            }
+          )}
 
         </div>
       )}

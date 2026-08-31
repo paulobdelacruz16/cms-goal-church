@@ -20,7 +20,10 @@ function App() {
       <Routes>
 
         {/* Public */}
-        <Route path="/login" element={<Login />} />
+        <Route
+          path="/login"
+          element={<Login />}
+        />
 
         {/* Application */}
         <Route element={<Layout />}>
@@ -41,23 +44,23 @@ function App() {
           />
 
           <Route
+            path="/forms/submissions"
+            element={<Submissions />}
+          />
+
+          <Route
             path="/forms/:id"
+            element={<FormBuilder />}
+          />
+
+          <Route
+            path="/forms/:id/edit"
             element={<FormBuilder />}
           />
 
           <Route
             path="/forms/:id/preview"
             element={<FormPreview />}
-          />
-
-          <Route
-            path="/forms/:id/data"
-            element={<Submissions />}
-          />
-
-          <Route
-            path="/forms/:id/edit"
-            element={<FormBuilder />}
           />
 
         </Route>

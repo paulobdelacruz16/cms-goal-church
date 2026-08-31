@@ -2,6 +2,7 @@ import { Link, Outlet } from 'react-router-dom'
 import {
   LayoutDashboard,
   FileText,
+  ClipboardList,
   LogIn,
 } from 'lucide-react'
 
@@ -38,6 +39,7 @@ function Layout() {
 
           <nav className="space-y-1 p-4">
 
+            {/* Dashboard */}
             <Link
               to="/"
               className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm hover:bg-gray-100"
@@ -46,12 +48,22 @@ function Layout() {
               Dashboard
             </Link>
 
+            {/* Forms */}
             <Link
               to="/forms"
               className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm hover:bg-gray-100"
             >
               <FileText size={18} />
               Forms
+            </Link>
+
+            {/* Submissions */}
+            <Link
+              to="/forms/submissions"
+              className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm hover:bg-gray-100"
+            >
+              <ClipboardList size={18} />
+              Submissions
             </Link>
 
           </nav>
