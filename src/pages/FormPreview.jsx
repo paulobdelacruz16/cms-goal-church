@@ -30,6 +30,7 @@ function FormPreview() {
   const [errors, setErrors] = useState({})
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
+  const [submitError, setSubmitError] = useState(null)
 
   useEffect(() => {
     async function loadForm() {
@@ -66,6 +67,9 @@ function FormPreview() {
     field,
     value
   ) {
+    setSubmitted(false)
+    setSubmitError(null)
+
     setValues((currentValues) => ({
       ...currentValues,
       [field.name]: value,
@@ -111,17 +115,24 @@ function FormPreview() {
     try {
       setSubmitting(true)
       setSubmitted(false)
+      setSubmitError(null)
 
       await createFormData({
         formId: form._id,
         data: values,
       })
 
+      setValues({})
+      setErrors({})
       setSubmitted(true)
     } catch (error) {
       console.error(
         'Failed to submit form:',
         error
+      )
+
+      setSubmitError(
+        'Something went wrong while submitting the form. Please try again.'
       )
     } finally {
       setSubmitting(false)
@@ -217,18 +228,36 @@ function FormPreview() {
           {/* Submit */}
           {form.fields?.length > 0 && (
             <div className="mt-8 border-t pt-6">
-              <Button type="submit">
-                {form.submitButtonText || 'Submit'}
+              <Button
+                type="submit"
+                disabled={submitting || submitted}
+              >
+                {submitting
+                  ? 'Submitting...'
+                  : submitted
+                    ? 'Submitted'
+                    : form.submitButtonText || 'Submit'}
               </Button>
             </div>
           )}
 
           {submitted && (
-            <div className="mt-4 rounded-lg border border-green-200 bg-green-50 p-4 text-sm text-green-700">
+            <div
+              role="status"
+              className="mt-4 rounded-lg border border-green-200 bg-green-50 p-4 text-sm text-green-700"
+            >
               {form.successMessage ||
                 'Thank you! Your response has been submitted.'}
             </div>
           )}
+
+          {submitError && (
+            <div className="mt-4 rounded-lg border border-destructive/20 bg-destructive/10 p-4 text-sm text-destructive">
+              {submitError}
+            </div>
+          )}
+
+
         </form>
 
       </div>
