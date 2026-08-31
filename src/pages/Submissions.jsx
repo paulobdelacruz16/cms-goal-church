@@ -2,11 +2,15 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 
 import { getFormData } from '@/api/formdata'
+import {
+  getFormTemplateById,
+} from '@/api/formtemplate'
 
 function Submissions() {
   const { id: formId } = useParams()
 
   const [submissions, setSubmissions] = useState([])
+  const [form, setForm] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
@@ -16,15 +20,22 @@ function Submissions() {
         setLoading(true)
         setError(null)
 
-        const data = await getFormData()
+        const [
+          submissionData,
+          formData,
+        ] = await Promise.all([
+          getFormData(),
+          getFormTemplateById(formId),
+        ])
 
         const filteredSubmissions =
-          data.filter(
+          submissionData.filter(
             (submission) =>
               submission.formId === formId
           )
 
         setSubmissions(filteredSubmissions)
+        setForm(formData)
       } catch (error) {
         console.error(
           'Failed to load submissions:',
@@ -43,6 +54,15 @@ function Submissions() {
       loadSubmissions()
     }
   }, [formId])
+
+  function getFieldLabel(fieldName) {
+    const field = form?.fields?.find(
+      (field) =>
+        field.name === fieldName
+    )
+
+    return field?.label || fieldName
+  }
 
   if (loading) {
     return (
@@ -129,7 +149,7 @@ function Submissions() {
                         className="grid grid-cols-[140px_1fr] gap-4 text-sm"
                       >
                         <div className="font-medium text-muted-foreground">
-                          {key}
+                          {getFieldLabel(key)}
                         </div>
 
                         <div className="break-words">
