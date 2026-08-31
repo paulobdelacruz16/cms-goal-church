@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, Link } from 'react-router-dom'
+import { ArrowLeft } from 'lucide-react'
 
 import { getDynamicPageContentById } from '@/api/dynamicPageContent'
 
@@ -18,9 +19,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { ArrowLeft } from 'lucide-react'
-import { Link } from 'react-router-dom'
-
 import { Button } from '@/components/ui/button'
 
 function FormPreview() {
@@ -29,6 +27,9 @@ function FormPreview() {
   const [form, setForm] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+
+  const [values, setValues] = useState({})
+  const [errors, setErrors] = useState({})
 
   useEffect(() => {
     async function loadForm() {
@@ -58,6 +59,58 @@ function FormPreview() {
       loadForm()
     }
   }, [id])
+
+  function handleFieldChange(
+    field,
+    value
+  ) {
+    setValues((currentValues) => ({
+      ...currentValues,
+      [field.name]: value,
+    }))
+  }
+
+  function validateForm() {
+    const newErrors = {}
+
+    for (const field of form.fields || []) {
+      if (!field.required) {
+        continue
+      }
+
+      const value = values[field.name]
+
+      const isEmpty =
+        value === undefined ||
+        value === null ||
+        value === '' ||
+        value === false
+
+      if (isEmpty) {
+        newErrors[field.name] =
+          `${field.label} is required.`
+      }
+    }
+
+    setErrors(newErrors)
+
+    return Object.keys(newErrors).length === 0
+  }
+
+  function handleSubmit(event) {
+    event.preventDefault()
+
+    const isValid = validateForm()
+
+    if (!isValid) {
+      return
+    }
+
+    console.log(
+      'Preview form values:',
+      values
+    )
+  }
 
   if (loading) {
     return (
@@ -123,7 +176,7 @@ function FormPreview() {
         </div>
 
         {/* Form */}
-        <div className="rounded-xl border bg-background p-6 shadow-sm md:p-8">
+        <form onSubmit={handleSubmit} className="rounded-xl border bg-background p-6 shadow-sm md:p-8">
 
           <div className="space-y-6">
 
@@ -132,6 +185,9 @@ function FormPreview() {
                 <PreviewField
                   key={field.id}
                   field={field}
+                  value={values[field.name]}
+                  error={errors[field.name]}
+                  onChange={handleFieldChange}
                 />
               ))
             ) : (
@@ -145,137 +201,204 @@ function FormPreview() {
           {/* Submit */}
           {form.fields?.length > 0 && (
             <div className="mt-8 border-t pt-6">
-              <Button disabled>
+              <Button type="submit">
                 {form.submitButtonText || 'Submit'}
               </Button>
             </div>
           )}
-
-        </div>
+        </form>
 
       </div>
 
-    </div>
+    </div >
   )
 }
 
-function PreviewField({ field }) {
+function PreviewField({ field, value, onChange, error }) {
   const inputId = `preview-${field.id}`
+
+  function handleChange(newValue) {
+    onChange(field, newValue)
+  }
 
   return (
     <div className="space-y-2">
 
-      <Label htmlFor={inputId}>
-        {field.label}
+      {/* Label */}
+      {field.type !== 'checkbox' && (
+        <Label htmlFor={inputId}>
+          {field.label}
 
-        {field.required && (
-          <span className="ml-1 text-destructive">
-            *
-          </span>
-        )}
-      </Label>
+          {field.required && (
+            <span className="ml-1 text-destructive">
+              *
+            </span>
+          )}
+        </Label>
+      )}
 
+      {/* Text */}
       {field.type === 'text' && (
         <Input
           id={inputId}
           type="text"
+          value={value || ''}
           placeholder={field.placeholder || ''}
-          disabled
+          onChange={(event) =>
+            handleChange(
+              event.target.value
+            )
+          }
         />
       )}
 
+      {/* Email */}
       {field.type === 'email' && (
         <Input
           id={inputId}
           type="email"
+          value={value || ''}
           placeholder={field.placeholder || ''}
-          disabled
+          onChange={(event) =>
+            handleChange(
+              event.target.value
+            )
+          }
         />
       )}
 
+      {/* Number */}
       {field.type === 'number' && (
         <Input
           id={inputId}
           type="number"
+          value={value || ''}
           placeholder={field.placeholder || ''}
-          disabled
+          onChange={(event) =>
+            handleChange(
+              event.target.value
+            )
+          }
         />
       )}
 
+      {/* Textarea */}
       {field.type === 'textarea' && (
         <Textarea
           id={inputId}
+          value={value || ''}
           placeholder={field.placeholder || ''}
-          disabled
+          onChange={(event) =>
+            handleChange(
+              event.target.value
+            )
+          }
         />
       )}
 
+      {/* Select */}
       {field.type === 'select' && (
-        <Select disabled>
+        <Select
+          value={value || ''}
+          onValueChange={handleChange}
+        >
           <SelectTrigger id={inputId}>
-            <SelectValue placeholder={field.placeholder || 'Select an option'} />
+            <SelectValue
+              placeholder={
+                field.placeholder ||
+                'Select an option'
+              }
+            />
           </SelectTrigger>
 
           <SelectContent>
-            {(field.options || []).map((option) => (
-              <SelectItem
-                key={option.value}
-                value={option.value}
-              >
-                {option.label}
-              </SelectItem>
-            ))}
+            {(field.options || []).map(
+              (option) => (
+                <SelectItem
+                  key={option.value}
+                  value={option.value}
+                >
+                  {option.label}
+                </SelectItem>
+              )
+            )}
           </SelectContent>
         </Select>
       )}
 
+      {/* Radio */}
       {field.type === 'radio' && (
-        <RadioGroup disabled>
-          {(field.options || []).map((option) => (
-            <div
-              key={option.value}
-              className="flex items-center gap-2"
-            >
-              <RadioGroupItem
-                value={option.value}
-                id={`${inputId}-${option.value}`}
-              />
-
-              <Label
-                htmlFor={`${inputId}-${option.value}`}
+        <RadioGroup
+          value={value || ''}
+          onValueChange={handleChange}
+        >
+          {(field.options || []).map(
+            (option) => (
+              <div
+                key={option.value}
+                className="flex items-center gap-2"
               >
-                {option.label}
-              </Label>
-            </div>
-          ))}
+                <RadioGroupItem
+                  value={option.value}
+                  id={`${inputId}-${option.value}`}
+                />
+
+                <Label
+                  htmlFor={`${inputId}-${option.value}`}
+                >
+                  {option.label}
+                </Label>
+              </div>
+            )
+          )}
         </RadioGroup>
       )}
 
+      {/* Checkbox */}
       {field.type === 'checkbox' && (
         <div className="flex items-center gap-2">
+
           <Checkbox
             id={inputId}
-            disabled
+            checked={Boolean(value)}
+            onCheckedChange={handleChange}
           />
 
           <Label htmlFor={inputId}>
             {field.label}
+
+            {field.required && (
+              <span className="ml-1 text-destructive">
+                *
+              </span>
+            )}
           </Label>
+
         </div>
       )}
 
+      {/* Date */}
       {field.type === 'date' && (
         <Input
           id={inputId}
           type="date"
-          disabled
+          value={value || ''}
+          onChange={(event) =>
+            handleChange(
+              event.target.value
+            )
+          }
         />
       )}
 
+      {error && (
+        <p className="text-sm text-destructive">
+          {error}
+        </p>
+      )}
     </div>
+
   )
 }
-
-
 
 export default FormPreview
