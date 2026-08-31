@@ -48,3 +48,23 @@ export async function getLatestFormData() {
 
   return response.json()
 }
+
+
+export async function updateFormData(id, data) {
+  const response = await fetch(
+    `${API_BASE_URL}/formdata/${id}`,
+    {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    }
+  )
+
+  if (!response.ok) {
+    throw new Error('Failed to update form template')
+  }
+
+  return response.json()
+}

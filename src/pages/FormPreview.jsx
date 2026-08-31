@@ -1,17 +1,25 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { ArrowLeft } from 'lucide-react'
-import { createFormData } from '@/api/formdata'
+import { ArrowLeft, History } from 'lucide-react'
+
+import {
+  createFormData,
+  getLatestFormData,
+  updateFormData,
+} from '@/api/formdata'
+
 import { getFormTemplateById } from '@/api/formtemplate'
 
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Checkbox } from '@/components/ui/checkbox'
+
 import {
   RadioGroup,
   RadioGroupItem,
 } from '@/components/ui/radio-group'
+
 import {
   Select,
   SelectContent,
@@ -19,18 +27,25 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+
 import { Button } from '@/components/ui/button'
 
 function FormPreview() {
   const { id } = useParams()
+
   const [form, setForm] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+
   const [values, setValues] = useState({})
   const [errors, setErrors] = useState({})
+
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [submitError, setSubmitError] = useState(null)
+
+  const [latestSubmission, setLatestSubmission] =
+    useState(null)
 
   useEffect(() => {
     async function loadForm() {
@@ -38,10 +53,23 @@ function FormPreview() {
         setLoading(true)
         setError(null)
 
-        const data =
-          await getFormTemplateById(id)
+        const [
+          formData,
+          latestData,
+        ] = await Promise.all([
+          getFormTemplateById(id),
+          getLatestFormData(),
+        ])
 
-        setForm(data)
+        setForm(formData)
+
+        if (latestData) {
+          setLatestSubmission(latestData)
+          setValues(latestData.data || {})
+        } else {
+          setLatestSubmission(null)
+          setValues({})
+        }
       } catch (error) {
         console.error(
           'Failed to load form:',
@@ -60,8 +88,6 @@ function FormPreview() {
       loadForm()
     }
   }, [id])
-
-
 
   function handleFieldChange(
     field,
@@ -117,23 +143,35 @@ function FormPreview() {
       setSubmitted(false)
       setSubmitError(null)
 
-      await createFormData({
+      const data = {
         formId: form._id,
         data: values,
         submittedAt: new Date().toISOString(),
-      })
+      }
 
-      setValues({})
+      let result
+
+      if (latestSubmission?._id) {
+        result = await updateFormData(
+          latestSubmission._id,
+          data
+        )
+      } else {
+        result = await createFormData(data)
+      }
+
+      setLatestSubmission(result)
+      setValues(result.data || values)
       setErrors({})
       setSubmitted(true)
     } catch (error) {
       console.error(
-        'Failed to submit form:',
+        'Failed to save form:',
         error
       )
 
       setSubmitError(
-        'Something went wrong while submitting the form. Please try again.'
+        'Something went wrong while saving the form. Please try again.'
       )
     } finally {
       setSubmitting(false)
@@ -170,6 +208,9 @@ function FormPreview() {
     )
   }
 
+  const isUpdateMode =
+    Boolean(latestSubmission)
+
   return (
     <div className="min-h-full bg-muted/30 p-6 md:p-10">
 
@@ -194,17 +235,43 @@ function FormPreview() {
             )}
           </div>
 
-          <Button asChild variant="outline">
-            <Link to={`/forms/${form._id}/edit`}>
-              <ArrowLeft />
-              Back to Builder
-            </Link>
-          </Button>
+          <div className="flex items-center gap-2">
+
+            {isUpdateMode && (
+              <Button
+                asChild
+                variant="outline"
+              >
+                <Link
+                  to={`/forms/${form._id}/history`}
+                >
+                  <History />
+                  History
+                </Link>
+              </Button>
+            )}
+
+            <Button
+              asChild
+              variant="outline"
+            >
+              <Link
+                to={`/forms/${form._id}/edit`}
+              >
+                <ArrowLeft />
+                Back to Builder
+              </Link>
+            </Button>
+
+          </div>
 
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="rounded-xl border bg-background p-6 shadow-sm md:p-8">
+        <form
+          onSubmit={handleSubmit}
+          className="rounded-xl border bg-background p-6 shadow-sm md:p-8"
+        >
 
           <div className="space-y-6">
 
@@ -226,19 +293,23 @@ function FormPreview() {
 
           </div>
 
-          {/* Submit */}
+          {/* Submit / Update */}
           {form.fields?.length > 0 && (
             <div className="mt-8 border-t pt-6">
+
               <Button
                 type="submit"
-                disabled={submitting || submitted}
+                disabled={submitting}
               >
                 {submitting
-                  ? 'Submitting...'
-                  : submitted
-                    ? 'Submitted'
+                  ? isUpdateMode
+                    ? 'Updating...'
+                    : 'Submitting...'
+                  : isUpdateMode
+                    ? 'Update'
                     : form.submitButtonText || 'Submit'}
               </Button>
+
             </div>
           )}
 
@@ -247,8 +318,10 @@ function FormPreview() {
               role="status"
               className="mt-4 rounded-lg border border-green-200 bg-green-50 p-4 text-sm text-green-700"
             >
-              {form.successMessage ||
-                'Thank you! Your response has been submitted.'}
+              {isUpdateMode
+                ? 'Your response has been updated.'
+                : form.successMessage ||
+                  'Thank you! Your response has been submitted.'}
             </div>
           )}
 
@@ -258,16 +331,20 @@ function FormPreview() {
             </div>
           )}
 
-
         </form>
 
       </div>
 
-    </div >
+    </div>
   )
 }
 
-function PreviewField({ field, value, onChange, error }) {
+function PreviewField({
+  field,
+  value,
+  onChange,
+  error,
+}) {
   const inputId = `preview-${field.id}`
 
   function handleChange(newValue) {
@@ -449,8 +526,8 @@ function PreviewField({ field, value, onChange, error }) {
           {error}
         </p>
       )}
-    </div>
 
+    </div>
   )
 }
 
