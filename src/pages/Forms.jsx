@@ -4,18 +4,18 @@ import { Plus, Pencil, Trash2, Eye } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 import {
-  useDynamicPageContent,
-  useDeleteDynamicPageContent,
-} from '@/hooks/useDynamicPageContent'
+  useFormTemplate,
+  useDeleteFormTemplate,
+} from '@/hooks/useFormTemplate'
 
 function Forms() {
   const {
     data: forms = [],
     isLoading,
     isError,
-  } = useDynamicPageContent()
+  } = useFormTemplate()
 
-  const deleteMutation = useDeleteDynamicPageContent()
+  const deleteMutation = useDeleteFormTemplate()
 
   function handleDelete(id) {
     const confirmed =

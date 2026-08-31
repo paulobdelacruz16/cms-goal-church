@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
-
-import { getDynamicPageContentById } from '@/api/dynamicPageContent'
+import { createFormData } from '@/api/formdata'
+import { getFormTemplateById } from '@/api/formtemplate'
 
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -38,7 +38,7 @@ function FormPreview() {
         setError(null)
 
         const data =
-          await getDynamicPageContentById(id)
+          await getFormTemplateById(id)
 
         setForm(data)
       } catch (error) {
@@ -59,6 +59,8 @@ function FormPreview() {
       loadForm()
     }
   }, [id])
+
+
 
   function handleFieldChange(
     field,
@@ -97,7 +99,7 @@ function FormPreview() {
     return Object.keys(newErrors).length === 0
   }
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault()
 
     const isValid = validateForm()
@@ -106,10 +108,22 @@ function FormPreview() {
       return
     }
 
-    console.log(
-      'Preview form values:',
-      values
-    )
+    try {
+      const result = await createFormData({
+        formId: form._id,
+        data: values,
+      })
+
+      console.log(
+        'Form data created:',
+        result
+      )
+    } catch (error) {
+      console.error(
+        'Failed to submit form:',
+        error
+      )
+    }
   }
 
   if (loading) {

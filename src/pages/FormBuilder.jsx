@@ -21,7 +21,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useParams } from 'react-router-dom'
 // import { createDynamicPageContent } from '@/api/dynamicPageContent'
-import { useCreateDynamicPageContent, useDynamicPageContentById, useUpdateDynamicPageContent } from '@/hooks/useDynamicPageContent'
+import { useCreateFormTemplate, useUpdateFormTemplate, useFormTemplateById } from '@/hooks/useFormTemplate'
 import FormSettings from '@/components/form-builder/FormSettings'
 
 function FormBuilder() {
@@ -33,14 +33,15 @@ function FormBuilder() {
   const selectedField = fields.find(
     (field) => field.id === selectedFieldId
   );
-  const createMutation = useCreateDynamicPageContent()
-  const updateMutation = useUpdateDynamicPageContent()
+  const createMutation = useCreateFormTemplate()
+  const updateMutation = useUpdateFormTemplate()
   const { id } = useParams()
   const {
     data: existingForm,
     isLoading: isLoadingForm,
     isError: isFormError,
-  } = useDynamicPageContentById(id)
+  } = useFormTemplateById(id)
+  
   const saving = createMutation.isPending || updateMutation.isPending
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false)
 
