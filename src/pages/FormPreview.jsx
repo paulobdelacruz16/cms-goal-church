@@ -120,6 +120,7 @@ function FormPreview() {
       await createFormData({
         formId: form._id,
         data: values,
+        submittedAt: new Date().toISOString(),
       })
 
       setValues({})
