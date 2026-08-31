@@ -23,13 +23,13 @@ import { Button } from '@/components/ui/button'
 
 function FormPreview() {
   const { id } = useParams()
-
   const [form, setForm] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-
   const [values, setValues] = useState({})
   const [errors, setErrors] = useState({})
+  const [submitting, setSubmitting] = useState(false)
+  const [submitted, setSubmitted] = useState(false)
 
   useEffect(() => {
     async function loadForm() {
@@ -109,20 +109,22 @@ function FormPreview() {
     }
 
     try {
-      const result = await createFormData({
+      setSubmitting(true)
+      setSubmitted(false)
+
+      await createFormData({
         formId: form._id,
         data: values,
       })
 
-      console.log(
-        'Form data created:',
-        result
-      )
+      setSubmitted(true)
     } catch (error) {
       console.error(
         'Failed to submit form:',
         error
       )
+    } finally {
+      setSubmitting(false)
     }
   }
 
@@ -218,6 +220,13 @@ function FormPreview() {
               <Button type="submit">
                 {form.submitButtonText || 'Submit'}
               </Button>
+            </div>
+          )}
+
+          {submitted && (
+            <div className="mt-4 rounded-lg border border-green-200 bg-green-50 p-4 text-sm text-green-700">
+              {form.successMessage ||
+                'Thank you! Your response has been submitted.'}
             </div>
           )}
         </form>
