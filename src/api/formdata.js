@@ -20,3 +20,17 @@ export async function createFormData(data) {
 
   return response.json()
 }
+
+export async function getFormData() {
+  const response = await fetch(
+    `${API_BASE_URL}/formdata`
+  )
+
+  if (!response.ok) {
+    throw new Error(
+      'Failed to fetch form data'
+    )
+  }
+
+  return response.json()
+}
