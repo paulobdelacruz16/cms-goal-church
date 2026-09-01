@@ -1,5 +1,9 @@
 import { useEffect, useState } from 'react'
-import { Eye, Pencil } from 'lucide-react'
+import {
+  Eye,
+  Pencil,
+  Trash2,
+} from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
 import {
@@ -99,26 +103,6 @@ function Submissions() {
     )
   }
 
-  function getPreviewFields(
-    submission
-  ) {
-    const form =
-      forms[submission.formId]
-
-    if (!form?.fields) {
-      return []
-    }
-
-    return form.fields
-      .filter((field) =>
-        Object.prototype.hasOwnProperty.call(
-          submission.data || {},
-          field.name
-        )
-      )
-      .slice(0, 3)
-  }
-
   if (loading) {
     return (
       <div>
@@ -164,6 +148,7 @@ function Submissions() {
       {/* Empty */}
       {submissions.length === 0 ? (
         <div className="mt-8 rounded-lg border border-dashed p-12 text-center">
+
           <p className="font-medium">
             No submissions yet
           </p>
@@ -171,6 +156,7 @@ function Submissions() {
           <p className="mt-1 text-sm text-muted-foreground">
             Submitted form data will appear here.
           </p>
+
         </div>
       ) : (
 
@@ -178,7 +164,7 @@ function Submissions() {
         <div className="mt-8 overflow-hidden rounded-lg border">
 
           {/* Header */}
-          <div className="grid grid-cols-[180px_180px_1fr_160px] border-b bg-muted/50 px-5 py-3 text-sm font-medium">
+          <div className="grid grid-cols-[1fr_220px_220px] border-b bg-muted/50 px-5 py-3 text-sm font-medium">
 
             <div>
               Form
@@ -186,10 +172,6 @@ function Submissions() {
 
             <div>
               Submitted
-            </div>
-
-            <div>
-              Data
             </div>
 
             <div className="text-right">
@@ -200,86 +182,70 @@ function Submissions() {
 
           {/* Rows */}
           {submissions.map(
-            (submission) => {
-              const previewFields =
-                getPreviewFields(
-                  submission
-                )
+            (submission) => (
+              <div
+                key={submission._id}
+                className="grid grid-cols-[1fr_220px_220px] items-center border-b px-5 py-4 last:border-b-0"
+              >
 
-              return (
-                <div
-                  key={submission._id}
-                  className="grid grid-cols-[180px_180px_1fr_160px] items-center border-b px-5 py-4 last:border-b-0"
-                >
+                {/* Form */}
+                <div className="text-sm font-medium">
+                  {getFormName(
+                    submission.formId
+                  )}
+                </div>
 
-                  {/* Form */}
-                  <div className="text-sm font-medium">
-                    {getFormName(
-                      submission.formId
-                    )}
-                  </div>
+                {/* Submitted */}
+                <div className="text-sm text-muted-foreground">
+                  {new Date(
+                    submission.submittedAt
+                  ).toLocaleString()}
+                </div>
 
-                  {/* Submitted */}
-                  <div className="text-sm text-muted-foreground">
-                    {new Date(
-                      submission.submittedAt
-                    ).toLocaleString()}
-                  </div>
+                {/* Actions */}
+                <div className="flex justify-end gap-2">
 
-                  {/* Data */}
-                  <div className="min-w-0 space-y-1">
-
-                    {previewFields.length > 0 ? (
-                      previewFields.map(
-                        (field) => (
-                          <div
-                            key={field.name}
-                            className="flex gap-2 text-sm"
-                          >
-                            <span className="font-medium">
-                              {field.label}:
-                            </span>
-
-                            <span className="truncate text-muted-foreground">
-                              {String(
-                                submission.data?.[
-                                  field.name
-                                ] ?? ''
-                              )}
-                            </span>
-                          </div>
-                        )
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      navigate(
+                        `/forms/${submission.formId}/preview`
                       )
-                    ) : (
-                      <span className="text-sm text-muted-foreground">
-                        No data
-                      </span>
-                    )}
+                    }
+                  >
+                    <Eye />
+                    View
+                  </Button>
 
-                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      navigate(
+                        `/forms/${submission.formId}/preview`
+                      )
+                    }
+                  >
+                    <Pencil />
+                    Edit
+                  </Button>
 
-                  {/* Actions */}
-                  <div className="flex justify-end gap-2">
-
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() =>
-                        navigate(
-                          `/forms/${submission.formId}/preview`
-                        )
-                      }
-                    >
-                      <Pencil />
-                      Edit
-                    </Button>
-
-                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                  >
+                    <Trash2 />
+                    Delete
+                  </Button>
 
                 </div>
-              )
-            }
+
+              </div>
+            )
           )}
 
         </div>
