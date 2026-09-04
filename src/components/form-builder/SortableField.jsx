@@ -1,4 +1,4 @@
-import { Copy, GripVertical, Trash2 } from 'lucide-react'
+import { Copy, Trash2 } from 'lucide-react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 
@@ -37,12 +37,14 @@ function SortableField({
     <div
       ref={setNodeRef}
       style={style}
+      {...attributes}
+      {...listeners}
       onClick={(event) => {
         event.stopPropagation()
         onSelect(field.id)
       }}
       className={`
-        rounded-lg border bg-background
+        cursor-grab rounded-lg border bg-background active:cursor-grabbing
         transition
         ${selected
           ? 'border-primary ring-2 ring-primary/20'
@@ -51,20 +53,6 @@ function SortableField({
       `}
     >
       <div className="flex items-start gap-3 p-4">
-
-        {/* Drag handle */}
-        <button
-          type="button"
-          {...attributes}
-          {...listeners}
-          onClick={(event) =>
-            event.stopPropagation()
-          }
-          className="mt-1 flex size-9 shrink-0 cursor-grab items-center justify-center rounded-md text-muted-foreground transition hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:cursor-grabbing"
-          aria-label={`Move ${field.label}`}
-        >
-          <GripVertical className="h-5 w-5" />
-        </button>
 
         {/* Field */}
         <div className="min-w-0 flex-1">
@@ -94,6 +82,9 @@ function SortableField({
               event.stopPropagation()
               onDuplicate(field.id)
             }}
+            onPointerDown={(event) =>
+              event.stopPropagation()
+            }
             className="rounded-md p-2 text-muted-foreground hover:bg-muted hover:text-foreground"
             aria-label={`Duplicate ${field.label}`}
           >
@@ -106,6 +97,9 @@ function SortableField({
               event.stopPropagation()
               onDelete(field.id)
             }}
+            onPointerDown={(event) =>
+              event.stopPropagation()
+            }
             className="rounded-md p-2 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
             aria-label={`Delete ${field.label}`}
           >

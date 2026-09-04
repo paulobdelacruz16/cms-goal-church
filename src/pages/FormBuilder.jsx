@@ -4,8 +4,12 @@ import { Link } from 'react-router-dom'
 import {
   DndContext,
   DragOverlay,
+  KeyboardSensor,
+  PointerSensor,
   closestCenter,
   pointerWithin,
+  useSensor,
+  useSensors,
 } from '@dnd-kit/core'
 import {
   arrayMove,
@@ -73,6 +77,15 @@ function formBuilderCollisionDetection(args) {
 }
 
 function FormBuilder() {
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor)
+  )
+
   const [fields, setFields] = useState([])
   const [activeField, setActiveField] = useState(null)
   const [selectedFieldId, setSelectedFieldId] = useState(null)
@@ -633,6 +646,7 @@ function FormBuilder() {
 
       {/* Builder */}
       <DndContext
+        sensors={sensors}
         collisionDetection={
           formBuilderCollisionDetection
         }

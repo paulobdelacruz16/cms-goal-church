@@ -78,7 +78,12 @@ function RepeatableContainer({
               verticalListSortingStrategy
             }
           >
-            <div className="space-y-3">
+            <div
+              className="space-y-3"
+              onPointerDown={(event) =>
+                event.stopPropagation()
+              }
+            >
 
               {field.fields.map(
                 (nestedField) => (
