@@ -43,7 +43,7 @@ function FormCanvas({
     <div
       ref={setNodeRef}
       className={`
-        min-h-96 rounded-lg border-2 border-dashed p-4
+        min-h-96 rounded-lg border-2 border-dashed p-2 md:p-4
         transition
         ${
           isCanvasDrop

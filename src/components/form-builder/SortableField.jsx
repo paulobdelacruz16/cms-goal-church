@@ -52,7 +52,7 @@ function SortableField({
         }
       `}
     >
-      <div className="flex flex-col gap-3 p-4 md:flex-row md:items-start">
+      <div className="flex flex-col gap-3 p-2 md:p-4 md:flex-row md:items-start">
 
         {/* Field */}
         <div className="min-w-0 flex-1">

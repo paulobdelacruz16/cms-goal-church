@@ -45,7 +45,7 @@ function RepeatableContainer({
     <div
       ref={setNodeRef}
       className={`
-        rounded-lg border-2 p-4
+        rounded-lg border-2 p-2 md:p-4
         transition-all
         ${isHighlighted
           ? 'border-primary bg-primary/5 ring-2 ring-primary/20'
