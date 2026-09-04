@@ -539,7 +539,6 @@ function FieldProperties({
       {/* Validation */}
       {(
         field.type === 'text' ||
-        field.type === 'email' ||
         field.type === 'textarea'
       ) && (
           <div className="space-y-4">
@@ -610,75 +609,6 @@ function FieldProperties({
 
           </div>
         )}
-
-      {/* Number Validation */}
-      {field.type === 'number' && (
-        <div className="space-y-4">
-
-          <div>
-            <h3 className="text-sm font-semibold">
-              Validation
-            </h3>
-
-            <p className="mt-1 text-xs text-muted-foreground">
-              Configure the allowed number range.
-            </p>
-          </div>
-
-          {/* Minimum */}
-          <div className="space-y-2">
-            <Label htmlFor="field-min">
-              Minimum
-            </Label>
-
-            <Input
-              id="field-min"
-              type="number"
-              value={
-                field.validation?.min ?? ''
-              }
-              onChange={(event) => {
-                const value = event.target.value
-
-                updateField('validation', {
-                  ...(field.validation || {}),
-                  min:
-                    value === ''
-                      ? undefined
-                      : Number(value),
-                })
-              }}
-            />
-          </div>
-
-          {/* Maximum */}
-          <div className="space-y-2">
-            <Label htmlFor="field-max">
-              Maximum
-            </Label>
-
-            <Input
-              id="field-max"
-              type="number"
-              value={
-                field.validation?.max ?? ''
-              }
-              onChange={(event) => {
-                const value = event.target.value
-
-                updateField('validation', {
-                  ...(field.validation || {}),
-                  max:
-                    value === ''
-                      ? undefined
-                      : Number(value),
-                })
-              }}
-            />
-          </div>
-
-        </div>
-      )}
 
       {/* Validation Error Message */}
       {field.required && (

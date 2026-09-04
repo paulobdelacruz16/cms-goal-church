@@ -19,40 +19,11 @@ function FormFieldRenderer({ field }) {
           />
         )
 
-      case 'email':
-        return (
-          <Input
-            id={inputId}
-            type="email"
-            placeholder={field.placeholder || ''}
-            disabled
-          />
-        )
-
-      case 'number':
-        return (
-          <Input
-            id={inputId}
-            type="number"
-            placeholder={field.placeholder || ''}
-            disabled
-          />
-        )
-
       case 'textarea':
         return (
           <Textarea
             id={inputId}
             placeholder={field.placeholder || ''}
-            disabled
-          />
-        )
-
-      case 'date':
-        return (
-          <Input
-            id={inputId}
-            type="date"
             disabled
           />
         )

@@ -14,36 +14,10 @@ function FieldRenderer({ field }) {
         />
       )
 
-    case FIELD_TYPES.EMAIL:
-      return (
-        <Input
-          type="email"
-          placeholder={field.placeholder || ''}
-          disabled
-        />
-      )
-
-    case FIELD_TYPES.NUMBER:
-      return (
-        <Input
-          type="number"
-          placeholder={field.placeholder || ''}
-          disabled
-        />
-      )
-
     case FIELD_TYPES.TEXTAREA:
       return (
         <Textarea
           placeholder={field.placeholder || ''}
-          disabled
-        />
-      )
-
-    case FIELD_TYPES.DATE:
-      return (
-        <Input
-          type="date"
           disabled
         />
       )

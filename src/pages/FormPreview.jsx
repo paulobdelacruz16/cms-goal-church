@@ -618,36 +618,6 @@ function PreviewField({
         />
       )}
 
-      {/* Email */}
-      {field.type === 'email' && (
-        <Input
-          id={inputId}
-          type="email"
-          value={value || ''}
-          placeholder={field.placeholder || ''}
-          onChange={(event) =>
-            handleChange(
-              event.target.value
-            )
-          }
-        />
-      )}
-
-      {/* Number */}
-      {field.type === 'number' && (
-        <Input
-          id={inputId}
-          type="number"
-          value={value || ''}
-          placeholder={field.placeholder || ''}
-          onChange={(event) =>
-            handleChange(
-              event.target.value
-            )
-          }
-        />
-      )}
-
       {/* Textarea */}
       {field.type === 'textarea' && (
         <Textarea
@@ -741,20 +711,6 @@ function PreviewField({
           </Label>
 
         </div>
-      )}
-
-      {/* Date */}
-      {field.type === 'date' && (
-        <Input
-          id={inputId}
-          type="date"
-          value={value || ''}
-          onChange={(event) =>
-            handleChange(
-              event.target.value
-            )
-          }
-        />
       )}
 
       {error && (
