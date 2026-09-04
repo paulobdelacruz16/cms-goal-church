@@ -656,13 +656,7 @@ function FormBuilder() {
       >
 
         <section className="border-b p-4">
-
-          <h2 className="mb-4 text-sm font-semibold">
-            Fields
-          </h2>
-
           <FieldPalette />
-
         </section>
 
         <div className="grid grid-cols-1 lg:min-h-0 lg:flex-1 lg:grid-cols-[minmax(0,1fr)_280px]">
