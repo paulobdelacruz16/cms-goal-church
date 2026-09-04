@@ -602,7 +602,7 @@ function FormBuilder() {
 
   return (
 
-    <div className="flex min-h-[calc(100vh-7.5rem)] flex-col md:h-[calc(100vh-2rem)]">
+    <div className="flex min-h-[calc(100vh-7.5rem)] flex-col lg:h-[calc(100vh-2rem)]">
 
       {/* Header */}
       <header className="flex h-16 shrink-0 items-center justify-between border-b">
@@ -655,21 +655,20 @@ function FormBuilder() {
         onDragEnd={handleDragEnd}
       >
 
-        <div className="grid grid-cols-1 md:min-h-0 md:flex-1 md:grid-cols-[220px_minmax(0,1fr)_280px]">
+        <section className="border-b p-4">
 
-          {/* Field Palette */}
-          <aside className="min-w-0 overflow-x-hidden border-b p-4 md:overflow-y-auto md:border-r md:border-b-0">
+          <h2 className="mb-4 text-sm font-semibold">
+            Fields
+          </h2>
 
-            <h2 className="mb-4 text-sm font-semibold">
-              Fields
-            </h2>
+          <FieldPalette />
 
-            <FieldPalette />
+        </section>
 
-          </aside>
+        <div className="grid grid-cols-1 lg:min-h-0 lg:flex-1 lg:grid-cols-[minmax(0,1fr)_280px]">
 
           {/* Canvas */}
-          <main className="min-w-0 bg-muted/30 p-4 md:overflow-y-auto md:p-8">
+          <main className="min-w-0 bg-muted/30 p-4 lg:overflow-y-auto lg:p-8">
 
             <div className="mx-auto min-h-full max-w-2xl">
 
@@ -702,7 +701,7 @@ function FormBuilder() {
           </main>
 
           {/* Properties */}
-          <aside className="min-w-0 overflow-x-hidden border-t p-4 md:overflow-y-auto md:border-t-0 md:border-l">
+          <aside className="min-w-0 overflow-x-hidden border-t p-4 lg:overflow-y-auto lg:border-t-0 lg:border-l">
 
             <h2 className="text-sm font-semibold">
               Form Settings

@@ -12,18 +12,46 @@ function Layout() {
 
       {/* Header */}
       <header className="border-b bg-white">
-        <div className="flex h-16 items-center justify-between px-4 md:px-6">
+        <div className="flex min-h-16 flex-wrap items-center gap-2 px-4 md:h-16 md:flex-nowrap md:px-6">
 
           <Link
             to="/"
-            className="text-xl font-bold"
+            className="shrink-0 text-xl font-bold"
           >
             Form Builder
           </Link>
 
+          <nav className="order-3 flex w-full gap-1 overflow-x-auto pb-2 md:order-none md:w-auto md:flex-1 md:justify-left md:pb-0">
+
+            <Link
+              to="/"
+              className="flex shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-sm hover:bg-gray-100"
+            >
+              <LayoutDashboard size={18} />
+              Dashboard
+            </Link>
+
+            <Link
+              to="/forms"
+              className="flex shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-sm hover:bg-gray-100"
+            >
+              <FileText size={18} />
+              Forms
+            </Link>
+
+            <Link
+              to="/forms/submissions"
+              className="flex shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-sm hover:bg-gray-100"
+            >
+              <ClipboardList size={18} />
+              Submissions
+            </Link>
+
+          </nav>
+
           <Link
             to="/login"
-            className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900"
+            className="flex shrink-0 items-center gap-2 text-sm text-gray-600 hover:text-gray-900"
           >
             <LogIn size={18} />
             Login
@@ -32,50 +60,10 @@ function Layout() {
         </div>
       </header>
 
-      <div className="flex flex-col md:flex-row">
-
-        {/* Sidebar */}
-        <aside className="w-full border-b bg-white md:min-h-[calc(100vh-4rem)] md:w-64 md:border-r md:border-b-0">
-
-          <nav className="flex gap-1 overflow-x-auto p-2 md:block md:space-y-1 md:p-4">
-
-            {/* Dashboard */}
-            <Link
-              to="/"
-              className="flex shrink-0 items-center gap-3 rounded-lg px-3 py-2 text-sm hover:bg-gray-100"
-            >
-              <LayoutDashboard size={18} />
-              Dashboard
-            </Link>
-
-            {/* Forms */}
-            <Link
-              to="/forms"
-              className="flex shrink-0 items-center gap-3 rounded-lg px-3 py-2 text-sm hover:bg-gray-100"
-            >
-              <FileText size={18} />
-              Forms
-            </Link>
-
-            {/* Submissions */}
-            <Link
-              to="/forms/submissions"
-              className="flex shrink-0 items-center gap-3 rounded-lg px-3 py-2 text-sm hover:bg-gray-100"
-            >
-              <ClipboardList size={18} />
-              Submissions
-            </Link>
-
-          </nav>
-
-        </aside>
-
-        {/* Main content */}
-        <main className="min-w-0 flex-1 p-4 md:p-8">
-          <Outlet />
-        </main>
-
-      </div>
+      {/* Main content */}
+      <main className="min-w-0 p-4 md:p-8">
+        <Outlet />
+      </main>
 
     </div>
   )
