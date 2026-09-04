@@ -30,7 +30,7 @@ export const FIELD_DEFINITIONS = [
   },
   {
     type: FIELD_TYPES.REPEATABLE,
-    label: 'Repeatable Container',
+    label: 'Container',
   },
 ]
 
