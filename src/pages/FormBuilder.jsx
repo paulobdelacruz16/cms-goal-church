@@ -662,7 +662,7 @@ function FormBuilder() {
         <div className="grid grid-cols-1 lg:min-h-0 lg:flex-1 lg:grid-cols-[minmax(0,1fr)_280px]">
 
           {/* Canvas */}
-          <main className="min-w-0 bg-muted/30 p-4 lg:overflow-y-auto lg:p-8">
+          <main className="min-w-0 bg-[#f0f4f8] p-4 lg:overflow-y-auto lg:p-8">
 
             <div className="mx-auto min-h-full max-w-2xl">
 
