@@ -30,6 +30,14 @@ import {
 
 import { Button } from '@/components/ui/button'
 
+function getInputFields(fields) {
+  return fields.flatMap((field) =>
+    field.type === 'repeatable'
+      ? getInputFields(field.fields || [])
+      : [field]
+  )
+}
+
 function FormPreview() {
   const { id } = useParams()
 
@@ -119,7 +127,7 @@ function FormPreview() {
   function validateForm() {
     const newErrors = {}
 
-    for (const field of form.fields || []) {
+    for (const field of getInputFields(form.fields || [])) {
       if (!field.required) {
         continue
       }
@@ -286,7 +294,9 @@ function FormPreview() {
                   key={field.id}
                   field={field}
                   value={values[field.name]}
+                  values={values}
                   error={errors[field.name]}
+                  errors={errors}
                   onChange={handleFieldChange}
                 />
               ))
@@ -347,9 +357,47 @@ function FormPreview() {
 function PreviewField({
   field,
   value,
+  values,
   onChange,
   error,
+  errors,
 }) {
+  if (field.type === 'repeatable') {
+    return (
+      <div className="rounded-lg border border-dashed p-4">
+        <div>
+          <h2 className="font-medium">
+            {field.label}
+          </h2>
+
+          <p className="mt-1 text-xs text-muted-foreground">
+            Repeatable Container
+          </p>
+        </div>
+
+        <div className="mt-4 space-y-6">
+          {field.fields?.length > 0 ? (
+            field.fields.map((nestedField) => (
+              <PreviewField
+                key={nestedField.id}
+                field={nestedField}
+                value={values[nestedField.name]}
+                values={values}
+                error={errors[nestedField.name]}
+                errors={errors}
+                onChange={onChange}
+              />
+            ))
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              No fields in this container.
+            </p>
+          )}
+        </div>
+      </div>
+    )
+  }
+
   const inputId = `preview-${field.id}`
 
   function handleChange(newValue) {
