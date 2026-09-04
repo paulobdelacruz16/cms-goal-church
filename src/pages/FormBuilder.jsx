@@ -30,9 +30,16 @@ function FormBuilder() {
   const [selectedFieldId, setSelectedFieldId] = useState(null)
   const [formName, setFormName] = useState('Untitled Form')
   const [formSlug, setFormSlug] = useState('untitled-form')
-  const selectedField = fields.find(
-    (field) => field.id === selectedFieldId
-  );
+  const selectedField = fields
+    .flatMap((field) =>
+      field.type === 'repeatable'
+        ? [field, ...(field.fields || [])]
+        : [field]
+    )
+    .find(
+      (field) =>
+        field.id === selectedFieldId
+    )
   const createMutation = useCreateFormTemplate()
   const updateMutation = useUpdateFormTemplate()
   const { id } = useParams()
@@ -41,7 +48,7 @@ function FormBuilder() {
     isLoading: isLoadingForm,
     isError: isFormError,
   } = useFormTemplateById(id)
-  
+
   const saving = createMutation.isPending || updateMutation.isPending
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false)
 
@@ -141,37 +148,98 @@ function FormBuilder() {
       return
     }
 
-    const activeType = active.data.current?.type
+    const activeType =
+      active.data.current?.type
 
-    // New field from palette
+    const overType =
+      over.data.current?.type
+
+    /*
+     * ========================================
+     * NEW FIELD FROM PALETTE
+     * ========================================
+     */
     if (activeType === 'palette-field') {
-      const fieldType = active.data.current?.fieldType
+      const fieldType =
+        active.data.current?.fieldType
 
       if (!fieldType) {
         return
       }
 
-      const newField = createField(fieldType)
+      const newField =
+        createField(fieldType)
 
+      /*
+       * Dropped into Repeatable Container
+       */
+      if (
+        overType ===
+        'repeatable-container'
+      ) {
+        const repeatableId =
+          over.data.current?.fieldId
+
+        if (!repeatableId) {
+          return
+        }
+
+        setFields(
+          (currentFields) =>
+            currentFields.map(
+              (field) => {
+                if (
+                  field.id !==
+                  repeatableId
+                ) {
+                  return field
+                }
+
+                return {
+                  ...field,
+
+                  fields: [
+                    ...(field.fields || []),
+                    newField,
+                  ],
+                }
+              }
+            )
+        )
+
+        return
+      }
+
+      /*
+       * Dropped into normal canvas
+       */
       setFields((currentFields) => {
+
         // Empty canvas
-        if (over.id === 'form-canvas') {
+        if (
+          over.id ===
+          'form-canvas'
+        ) {
           return [
             ...currentFields,
             newField,
           ]
         }
 
-        // Dropped on an existing field
-        const overIndex = currentFields.findIndex(
-          (field) => field.id === over.id
-        )
+        // Dropped on existing field
+        const overIndex =
+          currentFields.findIndex(
+            (field) =>
+              field.id === over.id
+          )
 
         if (overIndex === -1) {
           return currentFields
         }
 
-        const newFields = [...currentFields]
+        const newFields = [
+          ...currentFields,
+        ]
 
         newFields.splice(
           overIndex,
@@ -185,38 +253,140 @@ function FormBuilder() {
       return
     }
 
-    // Reorder existing fields
-    if (active.id !== over.id) {
-      setFields((currentFields) => {
-        const oldIndex = currentFields.findIndex(
-          (field) => field.id === active.id
-        )
+    /*
+     * ========================================
+     * EXISTING FIELD
+     * ========================================
+     */
 
-        const newIndex = currentFields.findIndex(
-          (field) => field.id === over.id
-        )
+    if (
+      activeType ===
+      'repeatable-container'
+    ) {
+      /*
+       * Don't allow a repeatable
+       * container to be dropped
+       * inside itself.
+       */
+      if (
+        over.id ===
+        `repeatable-${active.id}`
+      ) {
+        return
+      }
+    }
+
+    /*
+     * Don't currently move existing
+     * fields between containers.
+     *
+     * Existing fields only reorder
+     * within their current level.
+     */
+    setFields(
+      (currentFields) => {
+
+        const activeId =
+          active.id
+
+        const overId =
+          over.id
+
+        /*
+         * Top-level reorder
+         */
+        const oldIndex =
+          currentFields.findIndex(
+            (field) =>
+              field.id === activeId
+          )
+
+        const newIndex =
+          currentFields.findIndex(
+            (field) =>
+              field.id === overId
+          )
 
         if (
-          oldIndex === -1 ||
-          newIndex === -1
+          oldIndex !== -1 &&
+          newIndex !== -1
         ) {
-          return currentFields
+          return arrayMove(
+            currentFields,
+            oldIndex,
+            newIndex
+          )
         }
 
-        return arrayMove(
-          currentFields,
-          oldIndex,
-          newIndex
+        /*
+         * Nested reorder
+         */
+        return currentFields.map(
+          (field) => {
+
+            if (
+              field.type !==
+              'repeatable'
+            ) {
+              return field
+            }
+
+            const nestedFields =
+              field.fields || []
+
+            const nestedOldIndex =
+              nestedFields.findIndex(
+                (nestedField) =>
+                  nestedField.id ===
+                  activeId
+              )
+
+            const nestedNewIndex =
+              nestedFields.findIndex(
+                (nestedField) =>
+                  nestedField.id ===
+                  overId
+              )
+
+            if (
+              nestedOldIndex === -1 ||
+              nestedNewIndex === -1
+            ) {
+              return field
+            }
+
+            return {
+              ...field,
+
+              fields: arrayMove(
+                nestedFields,
+                nestedOldIndex,
+                nestedNewIndex
+              ),
+            }
+          }
         )
-      })
-    }
+      }
+    )
   }
 
   function handleFieldDelete(id) {
     setFields((currentFields) =>
-      currentFields.filter(
-        (field) => field.id !== id
-      )
+      currentFields
+        .filter((field) => field.id !== id)
+        .map((field) => {
+          if (field.type !== 'repeatable') {
+            return field
+          }
+
+          return {
+            ...field,
+            fields: (field.fields || []).filter(
+              (nestedField) =>
+                nestedField.id !== id
+            ),
+          }
+        })
     )
 
     if (selectedFieldId === id) {
@@ -226,42 +396,107 @@ function FormBuilder() {
 
   function handleFieldDuplicate(id) {
     setFields((currentFields) => {
-      const index = currentFields.findIndex(
-        (field) => field.id === id
-      )
+      // Top-level field
+      const topLevelIndex =
+        currentFields.findIndex(
+          (field) => field.id === id
+        )
 
-      if (index === -1) {
-        return currentFields
+      if (topLevelIndex !== -1) {
+        const original =
+          currentFields[topLevelIndex]
+
+        const duplicate = {
+          ...original,
+          id: `field_${crypto.randomUUID()}`,
+          name: `${original.name}_copy`,
+          label: `${original.label} Copy`,
+        }
+
+        const newFields = [
+          ...currentFields,
+        ]
+
+        newFields.splice(
+          topLevelIndex + 1,
+          0,
+          duplicate
+        )
+
+        return newFields
       }
 
-      const original = currentFields[index]
+      // Nested field
+      return currentFields.map(
+        (field) => {
+          if (field.type !== 'repeatable') {
+            return field
+          }
 
-      const duplicate = {
-        ...original,
-        id: `field_${crypto.randomUUID()}`,
-        name: `${original.name}_copy`,
-        label: `${original.label} Copy`,
-      }
+          const nestedIndex =
+            (field.fields || []).findIndex(
+              (nestedField) =>
+                nestedField.id === id
+            )
 
-      const newFields = [...currentFields]
+          if (nestedIndex === -1) {
+            return field
+          }
 
-      newFields.splice(
-        index + 1,
-        0,
-        duplicate
+          const original =
+            field.fields[nestedIndex]
+
+          const duplicate = {
+            ...original,
+            id: `field_${crypto.randomUUID()}`,
+            name: `${original.name}_copy`,
+            label: `${original.label} Copy`,
+          }
+
+          const nestedFields = [
+            ...(field.fields || []),
+          ]
+
+          nestedFields.splice(
+            nestedIndex + 1,
+            0,
+            duplicate
+          )
+
+          return {
+            ...field,
+            fields: nestedFields,
+          }
+        }
       )
-
-      return newFields
     })
   }
 
   function handleFieldChange(updatedField) {
     setFields((currentFields) =>
-      currentFields.map((field) =>
-        field.id === updatedField.id
-          ? updatedField
-          : field
-      )
+      currentFields.map((field) => {
+
+        // Top-level field
+        if (field.id === updatedField.id) {
+          return updatedField
+        }
+
+        // Nested field
+        if (field.type === 'repeatable') {
+          return {
+            ...field,
+            fields: (field.fields || []).map(
+              (nestedField) =>
+                nestedField.id ===
+                  updatedField.id
+                  ? updatedField
+                  : nestedField
+            ),
+          }
+        }
+
+        return field
+      })
     )
   }
 

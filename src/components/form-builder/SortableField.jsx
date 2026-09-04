@@ -3,6 +3,7 @@ import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 
 import FormFieldRenderer from './FormFieldRenderer'
+import RepeatableContainer from './RepeatableContainer'
 
 function SortableField({
   field,
@@ -28,6 +29,9 @@ function SortableField({
     opacity: isDragging ? 0.5 : 1,
   }
 
+  const isRepeatable =
+    field.type === 'repeatable'
+
   return (
     <div
       ref={setNodeRef}
@@ -49,7 +53,9 @@ function SortableField({
           type="button"
           {...attributes}
           {...listeners}
-          onClick={(event) => event.stopPropagation()}
+          onClick={(event) =>
+            event.stopPropagation()
+          }
           className="mt-2 cursor-grab text-muted-foreground hover:text-foreground active:cursor-grabbing"
           aria-label={`Move ${field.label}`}
         >
@@ -58,9 +64,21 @@ function SortableField({
 
         {/* Field */}
         <div className="min-w-0 flex-1">
-          <FormFieldRenderer
-            field={field}
-          />
+
+          {isRepeatable ? (
+            <RepeatableContainer
+              field={field}
+              selectedFieldId={field.id}
+              onFieldSelect={onSelect}
+              onDelete={onDelete}
+              onDuplicate={onDuplicate}
+            />
+          ) : (
+            <FormFieldRenderer
+              field={field}
+            />
+          )}
+
         </div>
 
         {/* Actions */}

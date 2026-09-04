@@ -7,6 +7,7 @@ export const FIELD_TYPES = {
   RADIO: 'radio',
   CHECKBOX: 'checkbox',
   DATE: 'date',
+  REPEATABLE: 'repeatable',
 }
 
 export const FIELD_DEFINITIONS = [
@@ -42,10 +43,24 @@ export const FIELD_DEFINITIONS = [
     type: FIELD_TYPES.DATE,
     label: 'Date',
   },
+  {
+    type: FIELD_TYPES.REPEATABLE,
+    label: 'Repeatable Container',
+  },
 ]
 
 export function createField(type) {
   const id = `field_${crypto.randomUUID()}`
+
+  if (type === FIELD_TYPES.REPEATABLE) {
+    return {
+      id,
+      type,
+      name: `repeatable_${Date.now()}`,
+      label: 'Repeatable Container',
+      fields: [],
+    }
+  }
 
   const defaults = {
     id,
