@@ -1,6 +1,11 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { ArrowLeft, History } from 'lucide-react'
+import {
+  ArrowLeft,
+  History,
+  Plus,
+  Trash2,
+} from 'lucide-react'
 
 import {
   createFormData,
@@ -30,12 +35,52 @@ import {
 
 import { Button } from '@/components/ui/button'
 
-function getInputFields(fields) {
-  return fields.flatMap((field) =>
-    field.type === 'repeatable'
-      ? getInputFields(field.fields || [])
-      : [field]
-  )
+function validateFields(
+  fields,
+  values,
+  errors,
+  path = ''
+) {
+  for (const field of fields) {
+    const fieldPath =
+      path
+        ? `${path}.${field.name}`
+        : field.name
+
+    if (field.type === 'repeatable') {
+      const entries = values[field.name]
+
+      if (Array.isArray(entries)) {
+        entries.forEach((entry, index) => {
+          validateFields(
+            field.fields || [],
+            entry,
+            errors,
+            `${fieldPath}.${index}`
+          )
+        })
+      }
+
+      continue
+    }
+
+    if (!field.required) {
+      continue
+    }
+
+    const value = values[field.name]
+
+    const isEmpty =
+      value === undefined ||
+      value === null ||
+      value === '' ||
+      value === false
+
+    if (isEmpty) {
+      errors[fieldPath] =
+        `${field.label} is required.`
+    }
+  }
 }
 
 function FormPreview() {
@@ -124,27 +169,89 @@ function FormPreview() {
     }))
   }
 
+  function handleRepeatableEntryAdd(field) {
+    setSubmitted(false)
+    setSubmitError(null)
+
+    setValues((currentValues) => {
+      const entries = Array.isArray(
+        currentValues[field.name]
+      )
+        ? currentValues[field.name]
+        : []
+
+      return {
+        ...currentValues,
+        [field.name]: [
+          ...entries,
+          {},
+        ],
+      }
+    })
+  }
+
+  function handleRepeatableEntryRemove(
+    field,
+    entryIndex
+  ) {
+    setSubmitted(false)
+    setSubmitError(null)
+
+    setValues((currentValues) => {
+      const entries = Array.isArray(
+        currentValues[field.name]
+      )
+        ? currentValues[field.name]
+        : [{}]
+
+      return {
+        ...currentValues,
+        [field.name]: entries.filter(
+          (_, index) => index !== entryIndex
+        ),
+      }
+    })
+  }
+
+  function handleRepeatableFieldChange(
+    repeatableField,
+    entryIndex,
+    field,
+    value
+  ) {
+    setSubmitted(false)
+    setSubmitError(null)
+
+    setValues((currentValues) => {
+      const entries = Array.isArray(
+        currentValues[repeatableField.name]
+      )
+        ? currentValues[repeatableField.name]
+        : [{}]
+
+      return {
+        ...currentValues,
+        [repeatableField.name]: entries.map(
+          (entry, index) =>
+            index === entryIndex
+              ? {
+                ...entry,
+                [field.name]: value,
+              }
+              : entry
+        ),
+      }
+    })
+  }
+
   function validateForm() {
     const newErrors = {}
 
-    for (const field of getInputFields(form.fields || [])) {
-      if (!field.required) {
-        continue
-      }
-
-      const value = values[field.name]
-
-      const isEmpty =
-        value === undefined ||
-        value === null ||
-        value === '' ||
-        value === false
-
-      if (isEmpty) {
-        newErrors[field.name] =
-          `${field.label} is required.`
-      }
-    }
+    validateFields(
+      form.fields || [],
+      values,
+      newErrors
+    )
 
     setErrors(newErrors)
 
@@ -294,10 +401,19 @@ function FormPreview() {
                   key={field.id}
                   field={field}
                   value={values[field.name]}
-                  values={values}
                   error={errors[field.name]}
                   errors={errors}
+                  fieldPath={field.name}
                   onChange={handleFieldChange}
+                  onRepeatableAdd={
+                    handleRepeatableEntryAdd
+                  }
+                  onRepeatableRemove={
+                    handleRepeatableEntryRemove
+                  }
+                  onRepeatableFieldChange={
+                    handleRepeatableFieldChange
+                  }
                 />
               ))
             ) : (
@@ -357,12 +473,19 @@ function FormPreview() {
 function PreviewField({
   field,
   value,
-  values,
   onChange,
   error,
   errors,
+  fieldPath,
+  onRepeatableAdd,
+  onRepeatableRemove,
+  onRepeatableFieldChange,
 }) {
   if (field.type === 'repeatable') {
+    const entries = Array.isArray(value)
+      ? value
+      : [{}]
+
     return (
       <div className="rounded-lg border border-dashed p-4">
         <div>
@@ -375,24 +498,84 @@ function PreviewField({
           </p>
         </div>
 
-        <div className="mt-4 space-y-6">
-          {field.fields?.length > 0 ? (
-            field.fields.map((nestedField) => (
-              <PreviewField
-                key={nestedField.id}
-                field={nestedField}
-                value={values[nestedField.name]}
-                values={values}
-                error={errors[nestedField.name]}
-                errors={errors}
-                onChange={onChange}
-              />
-            ))
-          ) : (
-            <p className="text-sm text-muted-foreground">
-              No fields in this container.
-            </p>
-          )}
+        <div className="mt-4 space-y-4">
+          {entries.map((entry, entryIndex) => (
+            <div
+              key={`${field.id}-${entryIndex}`}
+              className="rounded-md border bg-muted/20 p-4"
+            >
+              <div className="flex items-center justify-between gap-4">
+                <p className="text-sm font-medium">
+                  Entry {entryIndex + 1}
+                </p>
+
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() =>
+                    onRepeatableRemove(
+                      field,
+                      entryIndex
+                    )
+                  }
+                >
+                  <Trash2 />
+                  Remove
+                </Button>
+              </div>
+
+              <div className="mt-4 space-y-6">
+                {field.fields?.map(
+                  (nestedField) => {
+                    const nestedFieldPath =
+                      `${fieldPath}.${entryIndex}.${nestedField.name}`
+
+                    return (
+                      <PreviewField
+                        key={nestedField.id}
+                        field={nestedField}
+                        value={entry[nestedField.name]}
+                        error={errors[nestedFieldPath]}
+                        errors={errors}
+                        fieldPath={nestedFieldPath}
+                        onChange={(
+                          changedField,
+                          newValue
+                        ) =>
+                          onRepeatableFieldChange(
+                            field,
+                            entryIndex,
+                            changedField,
+                            newValue
+                          )
+                        }
+                        onRepeatableAdd={
+                          onRepeatableAdd
+                        }
+                        onRepeatableRemove={
+                          onRepeatableRemove
+                        }
+                        onRepeatableFieldChange={
+                          onRepeatableFieldChange
+                        }
+                      />
+                    )
+                  }
+                )}
+              </div>
+            </div>
+          ))}
+
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => onRepeatableAdd(field)}
+          >
+            <Plus />
+            Add another
+          </Button>
         </div>
       </div>
     )
