@@ -12,7 +12,7 @@ function Layout() {
 
       {/* Header */}
       <header className="border-b bg-white">
-        <div className="flex h-16 items-center justify-between px-6">
+        <div className="flex h-16 items-center justify-between px-4 md:px-6">
 
           <Link
             to="/"
@@ -32,17 +32,17 @@ function Layout() {
         </div>
       </header>
 
-      <div className="flex">
+      <div className="flex flex-col md:flex-row">
 
         {/* Sidebar */}
-        <aside className="min-h-[calc(100vh-4rem)] w-64 border-r bg-white">
+        <aside className="w-full border-b bg-white md:min-h-[calc(100vh-4rem)] md:w-64 md:border-r md:border-b-0">
 
-          <nav className="space-y-1 p-4">
+          <nav className="flex gap-1 overflow-x-auto p-2 md:block md:space-y-1 md:p-4">
 
             {/* Dashboard */}
             <Link
               to="/"
-              className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm hover:bg-gray-100"
+              className="flex shrink-0 items-center gap-3 rounded-lg px-3 py-2 text-sm hover:bg-gray-100"
             >
               <LayoutDashboard size={18} />
               Dashboard
@@ -51,7 +51,7 @@ function Layout() {
             {/* Forms */}
             <Link
               to="/forms"
-              className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm hover:bg-gray-100"
+              className="flex shrink-0 items-center gap-3 rounded-lg px-3 py-2 text-sm hover:bg-gray-100"
             >
               <FileText size={18} />
               Forms
@@ -60,7 +60,7 @@ function Layout() {
             {/* Submissions */}
             <Link
               to="/forms/submissions"
-              className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm hover:bg-gray-100"
+              className="flex shrink-0 items-center gap-3 rounded-lg px-3 py-2 text-sm hover:bg-gray-100"
             >
               <ClipboardList size={18} />
               Submissions
@@ -71,7 +71,7 @@ function Layout() {
         </aside>
 
         {/* Main content */}
-        <main className="flex-1 p-8">
+        <main className="min-w-0 flex-1 p-4 md:p-8">
           <Outlet />
         </main>
 
