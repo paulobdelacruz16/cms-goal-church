@@ -38,7 +38,8 @@ function RepeatableContainer({
    */
   const isHighlighted =
     isDraggingPaletteField &&
-    !!over
+    over?.id ===
+      `repeatable-${field.id}`
 
   return (
     <div
@@ -87,6 +88,9 @@ function RepeatableContainer({
                     parentId={field.id}
                     selected={
                       nestedField.id ===
+                      selectedFieldId
+                    }
+                    selectedFieldId={
                       selectedFieldId
                     }
                     onSelect={

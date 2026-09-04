@@ -21,7 +21,7 @@ function FormCanvas({
     id: 'form-canvas',
   })
 
-  const { active } = useDndContext()
+  const { active, over } = useDndContext()
 
   const isDraggingPaletteField =
     active?.data.current?.type ===
@@ -35,7 +35,9 @@ function FormCanvas({
    * trigger the canvas highlight.
    */
   const isCanvasDrop =
-    isDraggingPaletteField
+    isDraggingPaletteField &&
+    over?.data.current?.type !==
+      'repeatable-container'
 
   return (
     <div
@@ -85,6 +87,9 @@ function FormCanvas({
                     field.id ===
                     selectedFieldId
                   }
+                  selectedFieldId={
+                    selectedFieldId
+                  }
                   onSelect={onFieldSelect}
                   onDelete={onDelete}
                   onDuplicate={onDuplicate}
@@ -93,17 +98,7 @@ function FormCanvas({
             </div>
 
             {/* Empty space / drop area */}
-            <div className="flex min-h-32 flex-1 items-center justify-center">
-              <div className="text-center text-muted-foreground">
-                <p className="text-sm font-medium">
-                  Drop fields here
-                </p>
-
-                <p className="mt-1 text-xs">
-                  Drag another field from the left panel.
-                </p>
-              </div>
-            </div>
+            <div className="min-h-32 flex-1" />
 
           </div>
 

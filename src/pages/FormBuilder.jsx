@@ -5,12 +5,16 @@ import {
   DndContext,
   DragOverlay,
   closestCenter,
+  pointerWithin,
 } from '@dnd-kit/core'
 import {
   arrayMove,
 } from '@dnd-kit/sortable'
 
-import { Button } from '@/components/ui/button'
+import {
+  Button,
+  buttonVariants,
+} from '@/components/ui/button'
 
 import { createField } from '@/lib/form-fields'
 
@@ -23,6 +27,50 @@ import { useParams } from 'react-router-dom'
 // import { createDynamicPageContent } from '@/api/dynamicPageContent'
 import { useCreateFormTemplate, useUpdateFormTemplate, useFormTemplateById } from '@/hooks/useFormTemplate'
 import FormSettings from '@/components/form-builder/FormSettings'
+
+function formBuilderCollisionDetection(args) {
+  const activeType =
+    args.active.data.current?.type
+
+  /*
+   * New palette fields need to target the Repeatable that contains
+   * the pointer before considering its nested sortable fields or the
+   * enclosing canvas. Existing fields retain the current sorting
+   * collision behavior.
+   */
+  if (activeType !== 'palette-field') {
+    return closestCenter(args)
+  }
+
+  const pointerCollisions =
+    pointerWithin(args)
+
+  const repeatableCollisions = pointerCollisions.filter(
+    (collision) =>
+      collision.data.droppableContainer
+        .data.current?.type ===
+      'repeatable-container'
+  )
+
+  if (repeatableCollisions.length > 0) {
+    return repeatableCollisions
+  }
+
+  const canvasCollision = pointerCollisions.find(
+    (collision) => collision.id === 'form-canvas'
+  )
+
+  /*
+   * In the canvas's empty space, use the canvas itself as the target
+   * so a palette field is appended instead of being inserted before
+   * the nearest existing field.
+   */
+  if (pointerCollisions.length === 1 && canvasCollision) {
+    return [canvasCollision]
+  }
+
+  return closestCenter(args)
+}
 
 function FormBuilder() {
   const [fields, setFields] = useState([])
@@ -548,15 +596,15 @@ function FormBuilder() {
 
         <div className="flex items-center gap-4">
 
-          <Button
-            variant="ghost"
-            size="icon"
-            asChild
+          <Link
+            to="/forms"
+            className={buttonVariants({
+              variant: 'ghost',
+              size: 'icon',
+            })}
           >
-            <Link to="/forms">
-              <ArrowLeft />
-            </Link>
-          </Button>
+            <ArrowLeft />
+          </Link>
 
           <div>
             <h1 className="font-semibold">
@@ -585,7 +633,9 @@ function FormBuilder() {
 
       {/* Builder */}
       <DndContext
-        collisionDetection={closestCenter}
+        collisionDetection={
+          formBuilderCollisionDetection
+        }
         onDragStart={handleDragStart}
         onDragCancel={handleDragCancel}
         onDragEnd={handleDragEnd}

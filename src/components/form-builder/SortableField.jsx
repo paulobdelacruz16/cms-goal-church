@@ -8,6 +8,7 @@ import RepeatableContainer from './RepeatableContainer'
 function SortableField({
   field,
   selected,
+  selectedFieldId,
   onSelect,
   onDelete,
   onDuplicate,
@@ -36,7 +37,10 @@ function SortableField({
     <div
       ref={setNodeRef}
       style={style}
-      onClick={() => onSelect(field.id)}
+      onClick={(event) => {
+        event.stopPropagation()
+        onSelect(field.id)
+      }}
       className={`
         rounded-lg border bg-background
         transition
@@ -56,7 +60,7 @@ function SortableField({
           onClick={(event) =>
             event.stopPropagation()
           }
-          className="mt-2 cursor-grab text-muted-foreground hover:text-foreground active:cursor-grabbing"
+          className="mt-1 flex size-9 shrink-0 cursor-grab items-center justify-center rounded-md text-muted-foreground transition hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:cursor-grabbing"
           aria-label={`Move ${field.label}`}
         >
           <GripVertical className="h-5 w-5" />
@@ -68,7 +72,7 @@ function SortableField({
           {isRepeatable ? (
             <RepeatableContainer
               field={field}
-              selectedFieldId={field.id}
+              selectedFieldId={selectedFieldId}
               onFieldSelect={onSelect}
               onDelete={onDelete}
               onDuplicate={onDuplicate}
