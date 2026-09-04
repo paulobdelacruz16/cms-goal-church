@@ -52,7 +52,7 @@ function SortableField({
         }
       `}
     >
-      <div className="flex items-start gap-3 p-4">
+      <div className="flex flex-col gap-3 p-4 md:flex-row md:items-start">
 
         {/* Field */}
         <div className="min-w-0 flex-1">
@@ -74,7 +74,7 @@ function SortableField({
         </div>
 
         {/* Actions */}
-        <div className="flex shrink-0 gap-1">
+        <div className="order-first flex shrink-0 gap-1 md:order-none">
 
           <button
             type="button"
