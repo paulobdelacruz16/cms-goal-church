@@ -22,7 +22,7 @@ const FIELD_ICONS = {
   image: ImageIcon,
 }
 
-function DraggableField({ field }) {
+function DraggableField({ field, onClickAdd }) {
   const {
     attributes,
     listeners,
@@ -36,12 +36,15 @@ function DraggableField({ field }) {
       fieldType: field.type,
     },
   })
-  console.log(field.type);
+
+  if (isDragging) {
+    return null
+  }
+
   const Icon = FIELD_ICONS[field.type]
 
   const style = {
     transform: CSS.Translate.toString(transform),
-    opacity: isDragging ? 0.5 : 1,
   }
 
   return (
@@ -50,7 +53,8 @@ function DraggableField({ field }) {
       style={style}
       {...listeners}
       {...attributes}
-      className="flex cursor-grab min-w-0 flex-1 basis-[calc(50%-0.25rem)] items-center gap-2 rounded-lg border bg-background px-3 py-2 text-sm font-medium transition hover:bg-muted sm:basis-auto sm:flex-none  active:cursor-grabbing"
+      onClick={() => onClickAdd?.(field.type)}
+      className="flex cursor-grab min-w-0 flex-1 basis-[calc(50%-0.25rem)] items-center gap-2 rounded-lg border bg-background px-3 py-2 text-sm font-medium transition hover:bg-muted sm:basis-auto sm:flex-none active:cursor-grabbing"
     >
       {Icon && (
         <Icon

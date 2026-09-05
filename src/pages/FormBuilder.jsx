@@ -88,6 +88,7 @@ function FormBuilder() {
 
   const [fields, setFields] = useState([])
   const [activeField, setActiveField] = useState(null)
+  const [dragPosition, setDragPosition] = useState({ x: 0, y: 0 })
   const [selectedFieldId, setSelectedFieldId] = useState(null)
   const [formName, setFormName] = useState('Untitled Form')
   const [formSlug, setFormSlug] = useState('untitled-form')
@@ -567,6 +568,15 @@ function FormBuilder() {
     setSidebarMode('field')
   }
 
+  function handleAddField(type) {
+    const newField = createField(type)
+
+    setFields((currentFields) => [
+      ...currentFields,
+      newField,
+    ])
+  }
+
   function handleFormSettingsClick() {
     setSelectedFieldId(null)
     setSidebarMode('form')
@@ -574,21 +584,36 @@ function FormBuilder() {
 
 
   function handleDragStart(event) {
-    const { active } = event
+    const { active, activatorEvent } = event
 
-    const type = active.data.current?.type
-
-    if (type !== 'palette-field') {
+    if (active?.data?.current?.type !== 'palette-field') {
       return
     }
 
-    setActiveField(
-      active.data.current.fieldType
-    )
+    setActiveField(active.data.current.fieldType)
+
+    if (activatorEvent) {
+      setDragPosition({
+        x: activatorEvent.clientX,
+        y: activatorEvent.clientY,
+      })
+    }
+  }
+
+  function handleDragMove(event) {
+    if (!event?.activatorEvent) {
+      return
+    }
+
+    setDragPosition({
+      x: event.activatorEvent.clientX,
+      y: event.activatorEvent.clientY,
+    })
   }
 
   function handleDragCancel() {
     setActiveField(null)
+    setDragPosition({ x: 0, y: 0 })
   }
 
   if (id && isLoadingForm) {
@@ -614,6 +639,7 @@ function FormBuilder() {
         sensors={sensors}
         collisionDetection={formBuilderCollisionDetection}
         onDragStart={handleDragStart}
+        onDragMove={handleDragMove}
         onDragCancel={handleDragCancel}
         onDragEnd={handleDragEnd}
       >
@@ -636,7 +662,7 @@ function FormBuilder() {
 
             {/* Field Palette */}
             <div className="min-w-0 flex-1">
-              <FieldPalette />
+              <FieldPalette onAddField={handleAddField} />
             </div>
 
             {/* Save Form */}
@@ -680,7 +706,7 @@ function FormBuilder() {
 
             {/* Field Palette */}
             <div className="w-full rounded-lg border-2 border-dashed p-2">
-              <FieldPalette />
+              <FieldPalette onAddField={handleAddField} />
             </div>
           </div>
         </section>
@@ -814,11 +840,19 @@ function FormBuilder() {
 
         </div>
 
-
-        {/* Drag Overlay */}
-        <DragOverlay>
+        <DragOverlay dropAnimation={null}>
           {activeField ? (
-            <div className="w-48 rounded-lg border bg-background p-3 text-sm font-medium shadow-lg">
+            <div
+              className="w-48 rounded-lg border bg-background p-3 text-sm font-medium shadow-lg"
+              style={{
+                position: 'fixed',
+                left: dragPosition.x,
+                top: dragPosition.y,
+                transform: 'translate(-50%, -50%)',
+                pointerEvents: 'none',
+                zIndex: 60,
+              }}
+            >
               {activeField}
             </div>
           ) : null}
