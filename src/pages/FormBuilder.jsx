@@ -621,7 +621,8 @@ function FormBuilder() {
         {/* Field Toolbar */}
         <section className="shrink-0 border-b bg-background p-4">
 
-          <div className="flex items-center gap-4 rounded-lg border-2 border-dashed p-2">
+          {/* Desktop */}
+          <div className="hidden items-center gap-4 rounded-lg border-2 border-dashed p-2 lg:flex">
             {/* Add Field */}
             <div className="w-48 shrink-0">
               <h3 className="text-sm font-semibold text-blue-600">
@@ -645,12 +646,43 @@ function FormBuilder() {
               className="shrink-0 gap-2 bg-foreground text-background hover:bg-foreground/90"
             >
               <Save className="h-4 w-4" />
-
               {saving ? 'Saving...' : 'Save Form'}
             </Button>
 
           </div>
 
+          {/* Mobile */}
+          <div className="space-y-2 lg:hidden">
+
+            {/* Add Field + Save Form */}
+            <div className="flex w-full items-center justify-between rounded-lg border-2 border-dashed p-3">
+
+              <div>
+                <h3 className="text-sm font-semibold text-blue-600">
+                  Add Field
+                </h3>
+
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Drag or click to add to form
+                </p>
+              </div>
+
+              <Button
+                onClick={handleSave}
+                disabled={saving}
+                className="shrink-0 gap-2 bg-foreground text-background hover:bg-foreground/90"
+              >
+                <Save className="h-4 w-4" />
+                {saving ? 'Saving...' : 'Save Form'}
+              </Button>
+
+            </div>
+
+            {/* Field Palette */}
+            <div className="w-full rounded-lg border-2 border-dashed p-2">
+              <FieldPalette />
+            </div>
+          </div>
         </section>
 
 

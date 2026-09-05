@@ -70,6 +70,15 @@ function FieldRenderer({ field }) {
         </label>
       )
 
+    case FIELD_TYPES.IMAGE:
+      return (
+        <div className="rounded-md border border-dashed bg-muted/30 p-3">
+          <div className="flex h-24 items-center justify-center rounded-md bg-muted text-sm text-muted-foreground">
+            Image field
+          </div>
+        </div>
+      )
+
     default:
       return null
   }

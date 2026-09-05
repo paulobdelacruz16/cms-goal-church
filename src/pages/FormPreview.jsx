@@ -5,6 +5,8 @@ import {
   History,
   Plus,
   Trash2,
+  Image as ImageIcon,
+  X,
 } from 'lucide-react'
 
 import {
@@ -470,6 +472,142 @@ function FormPreview() {
   )
 }
 
+const IMAGE_REPO_URL =
+  'https://api.github.com/repos/paulobdelacruz16/images/contents/'
+
+function isImageFileName(fileName = '') {
+  return /\.(png|jpe?g|gif|webp|svg|bmp)$/i.test(fileName)
+}
+
+function GitHubImagePickerModal({
+  open,
+  onClose,
+  onSelect,
+}) {
+  const [images, setImages] = useState([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
+
+  useEffect(() => {
+    if (!open) {
+      return
+    }
+
+    async function loadImages() {
+      try {
+        setLoading(true)
+        setError(null)
+
+        const response = await fetch(IMAGE_REPO_URL, {
+          headers: {
+            Accept: 'application/vnd.github+json',
+          },
+        })
+
+        if (!response.ok) {
+          throw new Error('Unable to load images from GitHub.')
+        }
+
+        const data = await response.json()
+
+        const fileItems = Array.isArray(data)
+          ? data.filter(
+              (item) =>
+                item?.type === 'file' &&
+                isImageFileName(item?.name)
+            )
+          : []
+
+        setImages(fileItems)
+      } catch (loadError) {
+        console.error('Failed to fetch repo images:', loadError)
+        setError('Unable to load images from the repository right now.')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadImages()
+  }, [open])
+
+  if (!open) {
+    return null
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 p-4">
+      <div className="w-full max-w-3xl rounded-xl border bg-background shadow-xl">
+        <div className="flex items-center justify-between border-b px-5 py-4">
+          <div>
+            <h3 className="text-lg font-semibold">
+              Choose an image
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              Select one from the GitHub image repository.
+            </p>
+          </div>
+
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={onClose}
+            aria-label="Close image picker"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+
+        <div className="max-h-[70vh] overflow-y-auto p-5">
+          {loading && (
+            <p className="text-sm text-muted-foreground">
+              Loading images...
+            </p>
+          )}
+
+          {!loading && error && (
+            <div className="rounded-md border border-destructive/20 bg-destructive/10 p-3 text-sm text-destructive">
+              {error}
+            </div>
+          )}
+
+          {!loading && !error && images.length === 0 && (
+            <p className="text-sm text-muted-foreground">
+              No images found in the repository.
+            </p>
+          )}
+
+          {!loading && !error && images.length > 0 && (
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
+              {images.map((image) => (
+                <button
+                  key={image.path}
+                  type="button"
+                  className="group overflow-hidden rounded-lg border bg-muted/20 text-left transition hover:border-primary"
+                  onClick={() => {
+                    onSelect(image.download_url || image.html_url)
+                    onClose()
+                  }}
+                >
+                  <img
+                    src={image.download_url}
+                    alt={image.name}
+                    className="h-32 w-full object-cover"
+                  />
+
+                  <div className="border-t px-3 py-2 text-xs text-muted-foreground group-hover:text-foreground">
+                    {image.name}
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function PreviewField({
   field,
   value,
@@ -481,6 +619,8 @@ function PreviewField({
   onRepeatableRemove,
   onRepeatableFieldChange,
 }) {
+  const [isImagePickerOpen, setIsImagePickerOpen] = useState(false)
+
   if (field.type === 'repeatable') {
     const entries = Array.isArray(value)
       ? value
@@ -710,6 +850,50 @@ function PreviewField({
             )}
           </Label>
 
+        </div>
+      )}
+
+      {/* Image */}
+      {field.type === 'image' && (
+        <div className="space-y-3">
+          <div className="rounded-lg border border-dashed bg-muted/30 p-3">
+            {value ? (
+              <img
+                src={value}
+                alt={field.label || 'Selected image'}
+                className="h-44 w-full rounded-md object-cover"
+              />
+            ) : (
+              <div className="flex h-44 items-center justify-center rounded-md border border-dashed text-sm text-muted-foreground">
+                <div className="flex items-center gap-2">
+                  <ImageIcon className="h-4 w-4" />
+                  No image selected
+                </div>
+              </div>
+            )}
+          </div>
+
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() =>
+              setIsImagePickerOpen(true)
+            }
+          >
+            <ImageIcon className="h-4 w-4" />
+            Choose image
+          </Button>
+
+          <GitHubImagePickerModal
+            open={isImagePickerOpen}
+            onClose={() =>
+              setIsImagePickerOpen(false)
+            }
+            onSelect={(imageUrl) => {
+              handleChange(imageUrl)
+              setIsImagePickerOpen(false)
+            }}
+          />
         </div>
       )}
 

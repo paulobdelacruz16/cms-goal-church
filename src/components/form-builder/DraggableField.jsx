@@ -7,7 +7,8 @@ import {
   CircleDot,
   CheckSquare,
   CalendarDays,
-  LayoutGrid 
+  LayoutGrid,
+  ImageIcon
 } from 'lucide-react'
 
 const FIELD_ICONS = {
@@ -18,6 +19,7 @@ const FIELD_ICONS = {
   checkbox: CheckSquare,
   date: CalendarDays,
   repeatable: LayoutGrid,
+  image: ImageIcon,
 }
 
 function DraggableField({ field }) {
@@ -48,7 +50,7 @@ function DraggableField({ field }) {
       style={style}
       {...listeners}
       {...attributes}
-      className="flex cursor-grab items-center gap-2 rounded-lg border bg-background px-3 py-2 text-sm font-medium transition hover:bg-muted active:cursor-grabbing"
+      className="flex cursor-grab min-w-0 flex-1 basis-[calc(50%-0.25rem)] items-center gap-2 rounded-lg border bg-background px-3 py-2 text-sm font-medium transition hover:bg-muted sm:basis-auto sm:flex-none  active:cursor-grabbing"
     >
       {Icon && (
         <Icon

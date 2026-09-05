@@ -4,6 +4,7 @@ export const FIELD_TYPES = {
   SELECT: 'select',
   RADIO: 'radio',
   CHECKBOX: 'checkbox',
+  IMAGE: 'image',
   REPEATABLE: 'repeatable',
 }
 
@@ -27,6 +28,10 @@ export const FIELD_DEFINITIONS = [
   {
     type: FIELD_TYPES.CHECKBOX,
     label: 'Checkbox',
+  },
+  {
+    type: FIELD_TYPES.IMAGE,
+    label: 'Image',
   },
   {
     type: FIELD_TYPES.REPEATABLE,
@@ -79,6 +84,13 @@ export function createField(type) {
     return {
       ...defaults,
       checked: false,
+    }
+  }
+
+  if (type === FIELD_TYPES.IMAGE) {
+    return {
+      ...defaults,
+      imageUrl: '',
     }
   }
 
