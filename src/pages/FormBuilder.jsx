@@ -91,6 +91,7 @@ function FormBuilder() {
   const [selectedFieldId, setSelectedFieldId] = useState(null)
   const [formName, setFormName] = useState('Untitled Form')
   const [formSlug, setFormSlug] = useState('untitled-form')
+  const [sidebarMode, setSidebarMode] = useState('form')
   const selectedField = fields
     .flatMap((field) =>
       field.type === 'repeatable'
@@ -563,6 +564,12 @@ function FormBuilder() {
 
   function handleFieldSelect(id) {
     setSelectedFieldId(id)
+    setSidebarMode('field')
+  }
+
+  function handleFormSettingsClick() {
+    setSelectedFieldId(null)
+    setSidebarMode('form')
   }
 
 
@@ -698,74 +705,90 @@ function FormBuilder() {
             </h2>
 
             {/* Form Name + Slug */}
-            <div className="mt-6 space-y-4">
+            {sidebarMode === 'form' ? (
+              <>
+                {/* Form Name + Slug */}
+                <div className="mt-6 space-y-4">
 
-              <div className="space-y-2">
-                <Label htmlFor="form-name">
-                  Form Name
-                </Label>
+                  <div className="space-y-2">
+                    <Label htmlFor="form-name">
+                      Form Name
+                    </Label>
 
-                <Input
-                  id="form-name"
-                  value={formName}
-                  onChange={(event) =>
-                    handleFormNameChange(
-                      event.target.value
-                    )
+                    <Input
+                      id="form-name"
+                      value={formName}
+                      onChange={(event) =>
+                        handleFormNameChange(
+                          event.target.value
+                        )
+                      }
+                      placeholder="Contact Form"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="form-slug">
+                      Slug
+                    </Label>
+
+                    <Input
+                      id="form-slug"
+                      value={formSlug}
+                      onChange={(event) =>
+                        handleFormSlugChange(
+                          event.target.value
+                        )
+                      }
+                      placeholder="contact-form"
+                    />
+                  </div>
+
+                </div>
+
+                {/* Other Form Settings */}
+                <FormSettings
+                  formDescription={formDescription}
+                  submitButtonText={submitButtonText}
+                  successMessage={successMessage}
+                  onFormDescriptionChange={
+                    setFormDescription
                   }
-                  placeholder="Contact Form"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="form-slug">
-                  Slug
-                </Label>
-
-                <Input
-                  id="form-slug"
-                  value={formSlug}
-                  onChange={(event) =>
-                    handleFormSlugChange(
-                      event.target.value
-                    )
+                  onSubmitButtonTextChange={
+                    setSubmitButtonText
                   }
-                  placeholder="contact-form"
+                  onSuccessMessageChange={
+                    setSuccessMessage
+                  }
                 />
-              </div>
+              </>
+            ) : (
+              <>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleFormSettingsClick}
+                >
+                  <ArrowLeft />
+                  Form Settings
+                </Button>
 
-            </div>
+                <div className="mt-6">
 
-            {/* Other Form Settings */}
-            <FormSettings
-              formDescription={formDescription}
-              submitButtonText={submitButtonText}
-              successMessage={successMessage}
-              onFormDescriptionChange={
-                setFormDescription
-              }
-              onSubmitButtonTextChange={
-                setSubmitButtonText
-              }
-              onSuccessMessageChange={
-                setSuccessMessage
-              }
-            />
+                  <h2 className="text-sm font-semibold">
+                    Field Properties
+                  </h2>
 
-            {/* Field Properties */}
-            {selectedField && (
-              <div className="mt-8 border-t pt-6">
+                  {selectedField && (
+                    <FieldProperties
+                      field={selectedField}
+                      onChange={handleFieldChange}
+                    />
+                  )}
 
-                <h2 className="text-sm font-semibold">
-                  Field Properties
-                </h2>
-
-                <FieldProperties
-                  field={selectedField}
-                  onChange={handleFieldChange}
-                />
-
-              </div>
+                </div>
+              </>
             )}
 
           </aside>

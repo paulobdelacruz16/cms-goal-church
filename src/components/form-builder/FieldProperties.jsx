@@ -1,9 +1,10 @@
+import { useState } from 'react'
+
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Button } from '@/components/ui/button'
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
-import { Plus, Trash2, GripVertical } from 'lucide-react'
+import { Plus, Trash2, GripVertical, ChevronDown } from 'lucide-react'
 
 import {
   DndContext,
@@ -84,7 +85,6 @@ function SortableOption({
 
       </div>
 
-
       {/* Option Fields */}
       <div className="mt-3 space-y-3">
 
@@ -104,7 +104,6 @@ function SortableOption({
             }
           />
         </div>
-
 
         {/* Value */}
         <div>
@@ -134,6 +133,9 @@ function FieldProperties({
   field,
   onChange,
 }) {
+  const [showAdvanced, setShowAdvanced] =
+    useState(false)
+
   if (!field) {
     return (
       <div className="mt-8 text-center text-sm text-muted-foreground">
@@ -141,7 +143,6 @@ function FieldProperties({
       </div>
     )
   }
-
 
   /*
    * Normalize options so every option
@@ -157,14 +158,12 @@ function FieldProperties({
     })
   )
 
-
   function updateField(property, value) {
     onChange({
       ...field,
       [property]: value,
     })
   }
-
 
   /*
    * Convert label into a usable value.
@@ -183,7 +182,6 @@ function FieldProperties({
       .replace(/[^a-z0-9-]/g, '')
       .replace(/-+/g, '-')
   }
-
 
   /*
    * Handle changing an option label.
@@ -223,8 +221,8 @@ function FieldProperties({
 
       ...(shouldAutoUpdateValue
         ? {
-          value: newGeneratedValue,
-        }
+            value: newGeneratedValue,
+          }
         : {}),
     }
 
@@ -233,7 +231,6 @@ function FieldProperties({
       currentOptions
     )
   }
-
 
   /*
    * Handle manually changing
@@ -258,7 +255,6 @@ function FieldProperties({
     )
   }
 
-
   /*
    * Add a new option.
    */
@@ -282,7 +278,6 @@ function FieldProperties({
     )
   }
 
-
   /*
    * Delete an option.
    */
@@ -298,7 +293,6 @@ function FieldProperties({
       currentOptions
     )
   }
-
 
   /*
    * Reorder options.
@@ -348,9 +342,12 @@ function FieldProperties({
     )
   }
 
-
   return (
     <div className="mt-6 space-y-6">
+
+      {/* ========================= */}
+      {/* Basic Properties */}
+      {/* ========================= */}
 
       {/* Field Label */}
       <div className="space-y-2">
@@ -371,7 +368,6 @@ function FieldProperties({
         />
 
       </div>
-
 
       {/* Field Name */}
       <div className="space-y-2">
@@ -394,333 +390,294 @@ function FieldProperties({
       </div>
 
 
-      {/* Placeholder */}
-      {field.type !== 'checkbox' &&
-        field.type !== 'radio' && (
-          <div className="space-y-2">
+      {/* ========================= */}
+      {/* Advanced */}
+      {/* ========================= */}
 
-            <Label htmlFor="field-placeholder">
-              Placeholder
-            </Label>
+      <div className="border-t pt-4">
 
-            <Input
-              id="field-placeholder"
-              value={
-                field.placeholder || ''
-              }
-              onChange={(event) =>
-                updateField(
-                  'placeholder',
-                  event.target.value
-                )
-              }
-            />
-
-          </div>
-        )}
-
-      {/* Help Text */}
-      <div className="space-y-2">
-
-        <Label htmlFor="field-help-text">
-          Help Text
-        </Label>
-
-        <Input
-          id="field-help-text"
-          value={field.helpText || ''}
-          placeholder="Optional description..."
-          onChange={(event) =>
-            updateField(
-              'helpText',
-              event.target.value
+        <button
+          type="button"
+          onClick={() =>
+            setShowAdvanced(
+              (current) => !current
             )
           }
-        />
-
-        <p className="text-xs text-muted-foreground">
-          Optional text displayed below the field.
-        </p>
-
-      </div>
-
-      {/* Field Width */}
-      <div className="space-y-3">
-
-        <div>
-          <Label>
-            Width
-          </Label>
-
-          <p className="mt-1 text-xs text-muted-foreground">
-            Choose how much horizontal space this field uses.
-          </p>
-        </div>
-
-        <RadioGroup
-          value={field.width || 'full'}
-          onValueChange={(value) =>
-            updateField(
-              'width',
-              value
-            )
-          }
-          className="space-y-2"
+          className="flex w-full items-center justify-between text-sm font-medium hover:text-foreground"
         >
 
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem
-              value="full"
-              id="width-full"
-            />
+          <span>
+            Advanced
+          </span>
 
-            <Label
-              htmlFor="width-full"
-              className="font-normal"
-            >
-              Full
-            </Label>
-          </div>
-
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem
-              value="half"
-              id="width-half"
-            />
-
-            <Label
-              htmlFor="width-half"
-              className="font-normal"
-            >
-              Half
-            </Label>
-          </div>
-
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem
-              value="third"
-              id="width-third"
-            />
-
-            <Label
-              htmlFor="width-third"
-              className="font-normal"
-            >
-              Third
-            </Label>
-          </div>
-
-        </RadioGroup>
-
-      </div>
-
-      {/* Required */}
-      <div className="flex items-center justify-between">
-
-        <Label htmlFor="field-required">
-          Required
-        </Label>
-
-        <Switch
-          id="field-required"
-          checked={Boolean(
-            field.required
-          )}
-          onCheckedChange={(value) =>
-            updateField(
-              'required',
-              value
-            )
-          }
-        />
-
-      </div>
-
-      {/* Validation */}
-      {(
-        field.type === 'text' ||
-        field.type === 'textarea'
-      ) && (
-          <div className="space-y-4">
-
-            <div>
-              <h3 className="text-sm font-semibold">
-                Validation
-              </h3>
-
-              <p className="mt-1 text-xs text-muted-foreground">
-                Configure validation rules for this field.
-              </p>
-            </div>
-
-            {/* Minimum Length */}
-            <div className="space-y-2">
-              <Label htmlFor="field-min-length">
-                Minimum Length
-              </Label>
-
-              <Input
-                id="field-min-length"
-                type="number"
-                min="0"
-                value={
-                  field.validation?.minLength ?? ''
-                }
-                onChange={(event) => {
-                  const value = event.target.value
-
-                  updateField('validation', {
-                    ...(field.validation || {}),
-                    minLength:
-                      value === ''
-                        ? undefined
-                        : Number(value),
-                  })
-                }}
-              />
-            </div>
-
-            {/* Maximum Length */}
-            <div className="space-y-2">
-              <Label htmlFor="field-max-length">
-                Maximum Length
-              </Label>
-
-              <Input
-                id="field-max-length"
-                type="number"
-                min="0"
-                value={
-                  field.validation?.maxLength ?? ''
-                }
-                onChange={(event) => {
-                  const value = event.target.value
-
-                  updateField('validation', {
-                    ...(field.validation || {}),
-                    maxLength:
-                      value === ''
-                        ? undefined
-                        : Number(value),
-                  })
-                }}
-              />
-            </div>
-
-          </div>
-        )}
-
-      {/* Validation Error Message */}
-      {field.required && (
-        <div className="space-y-2">
-
-          <Label htmlFor="field-error-message">
-            Error Message
-          </Label>
-
-          <Input
-            id="field-error-message"
-            value={
-              field.validation?.message || ''
-            }
-            placeholder="This field is required."
-            onChange={(event) => {
-              updateField('validation', {
-                ...(field.validation || {}),
-                message: event.target.value,
-              })
-            }}
+          <ChevronDown
+            className={`h-4 w-4 transition-transform ${
+              showAdvanced
+                ? 'rotate-180'
+                : ''
+            }`}
           />
 
-          <p className="text-xs text-muted-foreground">
-            Message shown when this field fails validation.
-          </p>
+        </button>
 
-        </div>
-      )}
+        {showAdvanced && (
+          <div className="mt-5 space-y-6">
 
-      {/* Options */}
-      {(field.type === 'select' ||
-        field.type === 'radio') && (
-          <div className="mt-6 space-y-4">
+            {/* Placeholder */}
+            {field.type !== 'checkbox' &&
+              field.type !== 'radio' && (
+                <div className="space-y-2">
 
-            {/* Options Header */}
-            <div>
+                  <Label htmlFor="field-placeholder">
+                    Placeholder
+                  </Label>
 
-              <h3 className="text-sm font-semibold">
-                Options
-              </h3>
+                  <Input
+                    id="field-placeholder"
+                    value={
+                      field.placeholder || ''
+                    }
+                    onChange={(event) =>
+                      updateField(
+                        'placeholder',
+                        event.target.value
+                      )
+                    }
+                  />
 
-              <p className="mt-1 text-xs text-muted-foreground">
-                Add and edit the choices for this field.
-              </p>
+                </div>
+              )}
+
+            {/* Required */}
+            <div className="flex items-center justify-between">
+
+              <Label htmlFor="field-required">
+                Required
+              </Label>
+
+              <Switch
+                id="field-required"
+                checked={Boolean(
+                  field.required
+                )}
+                onCheckedChange={(value) =>
+                  updateField(
+                    'required',
+                    value
+                  )
+                }
+              />
 
             </div>
 
+            {/* Validation */}
+            {(
+              field.type === 'text' ||
+              field.type === 'textarea'
+            ) && (
+              <div className="space-y-4">
 
-            {/* Sortable Options */}
-            <DndContext
-              collisionDetection={
-                closestCenter
-              }
-              onDragEnd={
-                handleOptionDragEnd
-              }
-            >
+                <div>
+                  <h3 className="text-sm font-semibold">
+                    Validation
+                  </h3>
 
-              <SortableContext
-                items={options.map(
-                  (option) =>
-                    option.id
-                )}
-                strategy={
-                  verticalListSortingStrategy
-                }
-              >
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Configure validation rules for this field.
+                  </p>
+                </div>
 
-                <div className="space-y-3">
+                {/* Minimum Length */}
+                <div className="space-y-2">
 
-                  {options.map(
-                    (option, index) => (
-                      <SortableOption
-                        key={option.id}
-                        option={option}
-                        index={index}
-                        onLabelChange={
-                          handleOptionLabelChange
+                  <Label htmlFor="field-min-length">
+                    Minimum Length
+                  </Label>
+
+                  <Input
+                    id="field-min-length"
+                    type="number"
+                    min="0"
+                    value={
+                      field.validation?.minLength ?? ''
+                    }
+                    onChange={(event) => {
+                      const value =
+                        event.target.value
+
+                      updateField(
+                        'validation',
+                        {
+                          ...(field.validation || {}),
+                          minLength:
+                            value === ''
+                              ? undefined
+                              : Number(value),
                         }
-                        onValueChange={
-                          handleOptionValueChange
-                        }
-                        onDelete={
-                          handleDeleteOption
-                        }
-                      />
-                    )
-                  )}
+                      )
+                    }}
+                  />
 
                 </div>
 
-              </SortableContext>
+                {/* Maximum Length */}
+                <div className="space-y-2">
 
-            </DndContext>
+                  <Label htmlFor="field-max-length">
+                    Maximum Length
+                  </Label>
 
+                  <Input
+                    id="field-max-length"
+                    type="number"
+                    min="0"
+                    value={
+                      field.validation?.maxLength ?? ''
+                    }
+                    onChange={(event) => {
+                      const value =
+                        event.target.value
 
-            {/* Add Option */}
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full"
-              onClick={
-                handleAddOption
-              }
-            >
-              <Plus />
-              Add Option
-            </Button>
+                      updateField(
+                        'validation',
+                        {
+                          ...(field.validation || {}),
+                          maxLength:
+                            value === ''
+                              ? undefined
+                              : Number(value),
+                        }
+                      )
+                    }}
+                  />
+
+                </div>
+
+              </div>
+            )}
+
+            {/* Validation Error Message */}
+            {field.required && (
+              <div className="space-y-2">
+
+                <Label htmlFor="field-error-message">
+                  Error Message
+                </Label>
+
+                <Input
+                  id="field-error-message"
+                  value={
+                    field.validation?.message || ''
+                  }
+                  placeholder="This field is required."
+                  onChange={(event) => {
+                    updateField(
+                      'validation',
+                      {
+                        ...(field.validation || {}),
+                        message:
+                          event.target.value,
+                      }
+                    )
+                  }}
+                />
+
+                <p className="text-xs text-muted-foreground">
+                  Message shown when this field fails validation.
+                </p>
+
+              </div>
+            )}
 
           </div>
         )}
+
+      </div>
+
+
+      {/* ========================= */}
+      {/* Options */}
+      {/* ========================= */}
+
+      {(field.type === 'select' ||
+        field.type === 'radio') && (
+        <div className="mt-6 space-y-4 border-t pt-6">
+
+          {/* Options Header */}
+          <div>
+
+            <h3 className="text-sm font-semibold">
+              Options
+            </h3>
+
+            <p className="mt-1 text-xs text-muted-foreground">
+              Add and edit the choices for this field.
+            </p>
+
+          </div>
+
+          {/* Sortable Options */}
+          <DndContext
+            collisionDetection={
+              closestCenter
+            }
+            onDragEnd={
+              handleOptionDragEnd
+            }
+          >
+
+            <SortableContext
+              items={options.map(
+                (option) =>
+                  option.id
+              )}
+              strategy={
+                verticalListSortingStrategy
+              }
+            >
+
+              <div className="space-y-3">
+
+                {options.map(
+                  (option, index) => (
+                    <SortableOption
+                      key={option.id}
+                      option={option}
+                      index={index}
+                      onLabelChange={
+                        handleOptionLabelChange
+                      }
+                      onValueChange={
+                        handleOptionValueChange
+                      }
+                      onDelete={
+                        handleDeleteOption
+                      }
+                    />
+                  )
+                )}
+
+              </div>
+
+            </SortableContext>
+
+          </DndContext>
+
+          {/* Add Option */}
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full"
+            onClick={
+              handleAddOption
+            }
+          >
+            <Plus />
+            Add Option
+          </Button>
+
+        </div>
+      )}
 
     </div>
   )
