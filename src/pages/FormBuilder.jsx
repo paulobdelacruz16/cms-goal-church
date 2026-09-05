@@ -49,15 +49,21 @@ function formBuilderCollisionDetection(args) {
   const pointerCollisions =
     pointerWithin(args)
 
-  const repeatableCollisions = pointerCollisions.filter(
-    (collision) =>
-      collision.data.droppableContainer
-        .data.current?.type ===
-      'repeatable-container'
+  const containerCollisions = pointerCollisions.filter(
+    (collision) => {
+      const type =
+        collision.data.droppableContainer
+          ?.data.current?.type
+
+      return (
+        type === 'repeatable-container' ||
+        type === 'group-container'
+      )
+    }
   )
 
-  if (repeatableCollisions.length > 0) {
-    return repeatableCollisions
+  if (containerCollisions.length > 0) {
+    return containerCollisions
   }
 
   const canvasCollision = pointerCollisions.find(
@@ -74,6 +80,136 @@ function formBuilderCollisionDetection(args) {
   }
 
   return closestCenter(args)
+}
+
+function findFieldById(items, fieldId) {
+  for (const field of items) {
+    if (field.id === fieldId) {
+      return field
+    }
+
+    if (
+      (field.type === 'repeatable' ||
+        field.type === 'group') &&
+      Array.isArray(field.fields)
+    ) {
+      const nestedField = findFieldById(
+        field.fields,
+        fieldId
+      )
+
+      if (nestedField) {
+        return nestedField
+      }
+    }
+  }
+
+  return null
+}
+
+function updateFieldById(items, updatedField) {
+  return items.map((field) => {
+    if (field.id === updatedField.id) {
+      return updatedField
+    }
+
+    if (
+      (field.type === 'repeatable' ||
+        field.type === 'group') &&
+      Array.isArray(field.fields)
+    ) {
+      return {
+        ...field,
+        fields: updateFieldById(
+          field.fields,
+          updatedField
+        ),
+      }
+    }
+
+    return field
+  })
+}
+
+function removeFieldById(items, fieldId) {
+  return items
+    .filter((field) => field.id !== fieldId)
+    .map((field) => {
+      if (
+        (field.type !== 'repeatable' &&
+          field.type !== 'group') ||
+        !Array.isArray(field.fields)
+      ) {
+        return field
+      }
+
+      return {
+        ...field,
+        fields: removeFieldById(
+          field.fields,
+          fieldId
+        ),
+      }
+    })
+}
+
+function duplicateFieldTree(field) {
+  return {
+    ...field,
+    id: `field_${crypto.randomUUID()}`,
+    name: `${field.name}_copy`,
+    label: `${field.label} Copy`,
+    ...(Array.isArray(field.fields)
+      ? {
+          fields: field.fields.map(
+            (nestedField) =>
+              duplicateFieldTree(nestedField)
+          ),
+        }
+      : {}),
+  }
+}
+
+function duplicateFieldById(items, fieldId) {
+  for (let index = 0; index < items.length; index += 1) {
+    if (items[index].id === fieldId) {
+      const duplicate = duplicateFieldTree(
+        items[index]
+      )
+
+      return [
+        ...items.slice(0, index + 1),
+        duplicate,
+        ...items.slice(index + 1),
+      ]
+    }
+
+    const field = items[index]
+
+    if (
+      (field.type === 'repeatable' ||
+        field.type === 'group') &&
+      Array.isArray(field.fields)
+    ) {
+      const nestedFields = duplicateFieldById(
+        field.fields,
+        fieldId
+      )
+
+      if (nestedFields !== field.fields) {
+        return [
+          ...items.slice(0, index),
+          {
+            ...field,
+            fields: nestedFields,
+          },
+          ...items.slice(index + 1),
+        ]
+      }
+    }
+  }
+
+  return items
 }
 
 function FormBuilder() {
@@ -93,17 +229,10 @@ function FormBuilder() {
   const [formName, setFormName] = useState('Untitled Form')
   const [formSlug, setFormSlug] = useState('untitled-form')
   const [sidebarMode, setSidebarMode] = useState('form')
-  const selectedField = fields
-    .flatMap((field) =>
-      field.type === 'repeatable' ||
-      field.type === 'group'
-        ? [field, ...(field.fields || [])]
-        : [field]
-    )
-    .find(
-      (field) =>
-        field.id === selectedFieldId
-    )
+  const selectedField = findFieldById(
+    fields,
+    selectedFieldId
+  )
   const createMutation = useCreateFormTemplate()
   const updateMutation = useUpdateFormTemplate()
   const { id } = useParams()
@@ -203,6 +332,111 @@ function FormBuilder() {
     }
   }
 
+  function addFieldToContainer(items, containerId, newField) {
+    return items.map((item) => {
+      if (item.id === containerId) {
+        return {
+          ...item,
+          fields: [
+            ...(item.fields || []),
+            newField,
+          ],
+        }
+      }
+
+      if (
+        (item.type === 'repeatable' ||
+          item.type === 'group') &&
+        Array.isArray(item.fields)
+      ) {
+        return {
+          ...item,
+          fields: addFieldToContainer(
+            item.fields,
+            containerId,
+            newField
+          ),
+        }
+      }
+
+      return item
+    })
+  }
+
+  function insertFieldBeforeTarget(items, targetId, newField) {
+    const targetIndex =
+      items.findIndex(
+        (item) => item.id === targetId
+      )
+
+    if (targetIndex !== -1) {
+      return [
+        ...items.slice(0, targetIndex),
+        newField,
+        ...items.slice(targetIndex),
+      ]
+    }
+
+    const containerIndex =
+      items.findIndex(
+        (item) =>
+          (item.type === 'repeatable' ||
+            item.type === 'group') &&
+          Array.isArray(item.fields) &&
+          item.fields.some(
+            (nestedField) =>
+              nestedField.id === targetId
+          )
+      )
+
+    if (containerIndex !== -1) {
+      const container = items[containerIndex]
+      const nestedTargetIndex =
+        (container.fields || []).findIndex(
+          (nestedField) =>
+            nestedField.id === targetId
+        )
+
+      if (nestedTargetIndex !== -1) {
+        return [
+          ...items.slice(0, containerIndex),
+          {
+            ...container,
+            fields: [
+              ...((container.fields || []).slice(0, nestedTargetIndex)),
+              newField,
+              ...((container.fields || []).slice(nestedTargetIndex)),
+            ],
+          },
+          ...items.slice(containerIndex + 1),
+        ]
+      }
+    }
+
+    return items.map((item) => {
+      if (
+        (item.type === 'repeatable' ||
+          item.type === 'group') &&
+        Array.isArray(item.fields)
+      ) {
+        const nestedResult = insertFieldBeforeTarget(
+          item.fields,
+          targetId,
+          newField
+        )
+
+        if (nestedResult !== item.fields) {
+          return {
+            ...item,
+            fields: nestedResult,
+          }
+        }
+      }
+
+      return item
+    })
+  }
+
   function handleDragEnd(event) {
     const { active, over } = event
 
@@ -249,27 +483,12 @@ function FormBuilder() {
           return
         }
 
-        setFields(
-          (currentFields) =>
-            currentFields.map(
-              (field) => {
-                if (
-                  field.id !==
-                  repeatableId
-                ) {
-                  return field
-                }
-
-                return {
-                  ...field,
-
-                  fields: [
-                    ...(field.fields || []),
-                    newField,
-                  ],
-                }
-              }
-            )
+        setFields((currentFields) =>
+          addFieldToContainer(
+            currentFields,
+            repeatableId,
+            newField
+          )
         )
 
         return
@@ -279,11 +498,9 @@ function FormBuilder() {
        * Dropped into normal canvas
        */
       setFields((currentFields) => {
-
         // Empty canvas
         if (
-          over.id ===
-          'form-canvas'
+          over.id === 'form-canvas'
         ) {
           return [
             ...currentFields,
@@ -291,28 +508,17 @@ function FormBuilder() {
           ]
         }
 
-        // Dropped on existing field
-        const overIndex =
-          currentFields.findIndex(
-            (field) =>
-              field.id === over.id
-          )
-
-        if (overIndex === -1) {
-          return currentFields
-        }
-
-        const newFields = [
-          ...currentFields,
-        ]
-
-        newFields.splice(
-          overIndex,
-          0,
+        const inserted = insertFieldBeforeTarget(
+          currentFields,
+          over.id,
           newField
         )
 
-        return newFields
+        if (inserted !== currentFields) {
+          return inserted
+        }
+
+        return currentFields
       })
 
       return
@@ -438,24 +644,7 @@ function FormBuilder() {
 
   function handleFieldDelete(id) {
     setFields((currentFields) =>
-      currentFields
-        .filter((field) => field.id !== id)
-        .map((field) => {
-          if (
-            field.type !== 'repeatable' &&
-            field.type !== 'group'
-          ) {
-            return field
-          }
-
-          return {
-            ...field,
-            fields: (field.fields || []).filter(
-              (nestedField) =>
-                nestedField.id !== id
-            ),
-          }
-        })
+      removeFieldById(currentFields, id)
     )
 
     if (selectedFieldId === id) {
@@ -464,114 +653,17 @@ function FormBuilder() {
   }
 
   function handleFieldDuplicate(id) {
-    setFields((currentFields) => {
-      // Top-level field
-      const topLevelIndex =
-        currentFields.findIndex(
-          (field) => field.id === id
-        )
-
-      if (topLevelIndex !== -1) {
-        const original =
-          currentFields[topLevelIndex]
-
-        const duplicate = {
-          ...original,
-          id: `field_${crypto.randomUUID()}`,
-          name: `${original.name}_copy`,
-          label: `${original.label} Copy`,
-        }
-
-        const newFields = [
-          ...currentFields,
-        ]
-
-        newFields.splice(
-          topLevelIndex + 1,
-          0,
-          duplicate
-        )
-
-        return newFields
-      }
-
-      // Nested field
-      return currentFields.map(
-        (field) => {
-          if (
-            field.type !== 'repeatable' &&
-            field.type !== 'group'
-          ) {
-            return field
-          }
-
-          const nestedIndex =
-            (field.fields || []).findIndex(
-              (nestedField) =>
-                nestedField.id === id
-            )
-
-          if (nestedIndex === -1) {
-            return field
-          }
-
-          const original =
-            field.fields[nestedIndex]
-
-          const duplicate = {
-            ...original,
-            id: `field_${crypto.randomUUID()}`,
-            name: `${original.name}_copy`,
-            label: `${original.label} Copy`,
-          }
-
-          const nestedFields = [
-            ...(field.fields || []),
-          ]
-
-          nestedFields.splice(
-            nestedIndex + 1,
-            0,
-            duplicate
-          )
-
-          return {
-            ...field,
-            fields: nestedFields,
-          }
-        }
-      )
-    })
+    setFields((currentFields) =>
+      duplicateFieldById(currentFields, id)
+    )
   }
 
   function handleFieldChange(updatedField) {
     setFields((currentFields) =>
-      currentFields.map((field) => {
-
-        // Top-level field
-        if (field.id === updatedField.id) {
-          return updatedField
-        }
-
-        // Nested field
-        if (
-          field.type === 'repeatable' ||
-          field.type === 'group'
-        ) {
-          return {
-            ...field,
-            fields: (field.fields || []).map(
-              (nestedField) =>
-                nestedField.id ===
-                  updatedField.id
-                  ? updatedField
-                  : nestedField
-            ),
-          }
-        }
-
-        return field
-      })
+      updateFieldById(
+        currentFields,
+        updatedField
+      )
     )
   }
 
