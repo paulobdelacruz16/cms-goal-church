@@ -40,10 +40,6 @@ function Submissions() {
         const submissionData =
           await getLatestFormData()
 
-        setSubmissions(
-          submissionData
-        )
-
         const uniqueFormIds = [
           ...new Set(
             submissionData.map(
@@ -57,14 +53,23 @@ function Submissions() {
           await Promise.all(
             uniqueFormIds.map(
               async (formId) => {
-                const form =
-                  await getFormTemplateById(
-                    formId
+                try {
+                  const form =
+                    await getFormTemplateById(
+                      formId
+                    )
+
+                  return {
+                    formId,
+                    form,
+                  }
+                } catch (formError) {
+                  console.warn(
+                    `Skipping submission form ${formId}: template not found.`,
+                    formError
                   )
 
-                return {
-                  formId,
-                  form,
+                  return null
                 }
               }
             )
@@ -73,11 +78,24 @@ function Submissions() {
         const formMap = {}
 
         formResults.forEach(
-          ({ formId, form }) => {
-            formMap[formId] = form
+          (result) => {
+            if (!result) {
+              return
+            }
+
+            formMap[result.formId] = result.form
           }
         )
 
+        const availableSubmissions =
+          submissionData.filter(
+            (submission) =>
+              formMap[submission.formId]
+          )
+
+        setSubmissions(
+          availableSubmissions
+        )
         setForms(formMap)
       } catch (error) {
         console.error(

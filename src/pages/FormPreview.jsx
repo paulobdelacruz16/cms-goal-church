@@ -69,7 +69,7 @@ function validateFields(
     if (field.type === 'group') {
       validateFields(
         field.fields || [],
-        values,
+        values[field.name] || {},
         errors,
         fieldPath
       )
@@ -94,6 +94,39 @@ function validateFields(
         `${field.label} is required.`
     }
   }
+}
+
+function getValueAtPath(values, path) {
+  return path.reduce(
+    (currentValue, key) =>
+      currentValue?.[key],
+    values
+  )
+}
+
+function setValueAtPath(values, path, value) {
+  if (path.length === 0) {
+    return value
+  }
+
+  const [key, ...remainingPath] = path
+  const nextValues = Array.isArray(values)
+    ? [...values]
+    : { ...values }
+
+  nextValues[key] = remainingPath.length > 0
+    ? setValueAtPath(
+        values?.[key] || (
+          typeof remainingPath[0] === 'number'
+            ? []
+            : {}
+        ),
+        remainingPath,
+        value
+      )
+    : value
+
+  return nextValues
 }
 
 function FormPreview() {
@@ -169,92 +202,77 @@ function FormPreview() {
     }
   }, [id])
 
-  function handleFieldChange(
-    field,
-    value
-  ) {
+  function handleFieldChange(path, value) {
     setSubmitted(false)
     setSubmitError(null)
 
-    setValues((currentValues) => ({
-      ...currentValues,
-      [field.name]: value,
-    }))
+    setValues((currentValues) =>
+      setValueAtPath(
+        currentValues,
+        path,
+        value
+      )
+    )
   }
 
-  function handleRepeatableEntryAdd(field) {
+  function handleRepeatableEntryAdd(path) {
     setSubmitted(false)
     setSubmitError(null)
 
     setValues((currentValues) => {
-      const entries = Array.isArray(
-        currentValues[field.name]
+      const currentEntries = getValueAtPath(
+        currentValues,
+        path
       )
-        ? currentValues[field.name]
+      const entries = Array.isArray(currentEntries)
+        ? currentEntries
         : []
 
-      return {
-        ...currentValues,
-        [field.name]: [
+      return setValueAtPath(
+        currentValues,
+        path,
+        [
           ...entries,
           {},
-        ],
-      }
+        ]
+      )
     })
   }
 
   function handleRepeatableEntryRemove(
-    field,
+    path,
     entryIndex
   ) {
     setSubmitted(false)
     setSubmitError(null)
 
     setValues((currentValues) => {
-      const entries = Array.isArray(
-        currentValues[field.name]
+      const currentEntries = getValueAtPath(
+        currentValues,
+        path
       )
-        ? currentValues[field.name]
+      const entries = Array.isArray(currentEntries)
+        ? currentEntries
         : [{}]
 
-      return {
-        ...currentValues,
-        [field.name]: entries.filter(
+      return setValueAtPath(
+        currentValues,
+        path,
+        entries.filter(
           (_, index) => index !== entryIndex
-        ),
-      }
+        )
+      )
     })
   }
 
   function handleRepeatableFieldChange(
-    repeatableField,
-    entryIndex,
-    field,
+    path,
     value
   ) {
     setSubmitted(false)
     setSubmitError(null)
 
-    setValues((currentValues) => {
-      const entries = Array.isArray(
-        currentValues[repeatableField.name]
-      )
-        ? currentValues[repeatableField.name]
-        : [{}]
-
-      return {
-        ...currentValues,
-        [repeatableField.name]: entries.map(
-          (entry, index) =>
-            index === entryIndex
-              ? {
-                ...entry,
-                [field.name]: value,
-              }
-              : entry
-        ),
-      }
-    })
+    handleFieldChange(path, value)
   }
 
   function validateForm() {
@@ -417,6 +435,7 @@ function FormPreview() {
                   error={errors[field.name]}
                   errors={errors}
                   fieldPath={field.name}
+                  valuePath={[field.name]}
                   onChange={handleFieldChange}
                   onRepeatableAdd={
                     handleRepeatableEntryAdd
@@ -626,6 +645,7 @@ function PreviewField({
   error,
   errors,
   fieldPath,
+  valuePath,
   onRepeatableAdd,
   onRepeatableRemove,
   onRepeatableFieldChange,
@@ -668,15 +688,11 @@ function PreviewField({
                     error={errors[nestedFieldPath]}
                     errors={errors}
                     fieldPath={nestedFieldPath}
-                    onChange={(
-                      changedField,
-                      newValue
-                    ) =>
-                      onChange(
-                        changedField,
-                        newValue
-                      )
-                    }
+                        valuePath={[
+                          ...valuePath,
+                          nestedField.name,
+                        ]}
+                        onChange={onChange}
                     onRepeatableAdd={
                       onRepeatableAdd
                     }
@@ -708,7 +724,7 @@ function PreviewField({
                       size="sm"
                       onClick={() =>
                         onRepeatableRemove(
-                          field,
+                          valuePath,
                           entryIndex
                         )
                       }
@@ -732,17 +748,14 @@ function PreviewField({
                             error={errors[nestedFieldPath]}
                             errors={errors}
                             fieldPath={nestedFieldPath}
-                            onChange={(
-                              changedField,
-                              newValue
-                            ) =>
-                              onRepeatableFieldChange(
-                                field,
-                                entryIndex,
-                                changedField,
-                                newValue
-                              )
-                            }
+                                valuePath={[
+                                  ...valuePath,
+                                  entryIndex,
+                                  nestedField.name,
+                                ]}
+                                onChange={
+                                  onRepeatableFieldChange
+                                }
                             onRepeatableAdd={
                               onRepeatableAdd
                             }
@@ -764,7 +777,7 @@ function PreviewField({
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={() => onRepeatableAdd(field)}
+                onClick={() => onRepeatableAdd(valuePath)}
               >
                 <Plus />
                 Add another
@@ -779,7 +792,7 @@ function PreviewField({
   const inputId = `preview-${field.id}`
 
   function handleChange(newValue) {
-    onChange(field, newValue)
+    onChange(valuePath, newValue)
   }
 
   return (
