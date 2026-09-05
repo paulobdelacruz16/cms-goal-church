@@ -66,6 +66,17 @@ function validateFields(
       continue
     }
 
+    if (field.type === 'group') {
+      validateFields(
+        field.fields || [],
+        values,
+        errors,
+        fieldPath
+      )
+
+      continue
+    }
+
     if (!field.required) {
       continue
     }
@@ -621,10 +632,14 @@ function PreviewField({
 }) {
   const [isImagePickerOpen, setIsImagePickerOpen] = useState(false)
 
-  if (field.type === 'repeatable') {
-    const entries = Array.isArray(value)
-      ? value
-      : [{}]
+  if (field.type === 'repeatable' || field.type === 'group') {
+    const isGroup = field.type === 'group'
+    const entries =
+      field.type === 'repeatable'
+        ? Array.isArray(value)
+          ? value
+          : [{}]
+        : null
 
     return (
       <div className="rounded-lg border border-dashed p-4">
@@ -634,88 +649,128 @@ function PreviewField({
           </h2>
 
           <p className="mt-1 text-xs text-muted-foreground">
-            Repeatable Container
+            {isGroup ? 'Group Container' : 'Repeatable Container'}
           </p>
         </div>
 
         <div className="mt-4 space-y-4">
-          {entries.map((entry, entryIndex) => (
-            <div
-              key={`${field.id}-${entryIndex}`}
-              className="rounded-md border bg-muted/20 p-4"
-            >
-              <div className="flex items-center justify-between gap-4">
-                <p className="text-sm font-medium">
-                  Entry {entryIndex + 1}
-                </p>
+          {isGroup ? (
+            <div className="space-y-6">
+              {field.fields?.map((nestedField) => {
+                const nestedFieldPath =
+                  `${fieldPath}.${nestedField.name}`
 
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() =>
-                    onRepeatableRemove(
-                      field,
-                      entryIndex
-                    )
-                  }
-                >
-                  <Trash2 />
-                  Remove
-                </Button>
-              </div>
-
-              <div className="mt-4 space-y-6">
-                {field.fields?.map(
-                  (nestedField) => {
-                    const nestedFieldPath =
-                      `${fieldPath}.${entryIndex}.${nestedField.name}`
-
-                    return (
-                      <PreviewField
-                        key={nestedField.id}
-                        field={nestedField}
-                        value={entry[nestedField.name]}
-                        error={errors[nestedFieldPath]}
-                        errors={errors}
-                        fieldPath={nestedFieldPath}
-                        onChange={(
-                          changedField,
-                          newValue
-                        ) =>
-                          onRepeatableFieldChange(
-                            field,
-                            entryIndex,
-                            changedField,
-                            newValue
-                          )
-                        }
-                        onRepeatableAdd={
-                          onRepeatableAdd
-                        }
-                        onRepeatableRemove={
-                          onRepeatableRemove
-                        }
-                        onRepeatableFieldChange={
-                          onRepeatableFieldChange
-                        }
-                      />
-                    )
-                  }
-                )}
-              </div>
+                return (
+                  <PreviewField
+                    key={nestedField.id}
+                    field={nestedField}
+                    value={value?.[nestedField.name]}
+                    error={errors[nestedFieldPath]}
+                    errors={errors}
+                    fieldPath={nestedFieldPath}
+                    onChange={(
+                      changedField,
+                      newValue
+                    ) =>
+                      onChange(
+                        changedField,
+                        newValue
+                      )
+                    }
+                    onRepeatableAdd={
+                      onRepeatableAdd
+                    }
+                    onRepeatableRemove={
+                      onRepeatableRemove
+                    }
+                    onRepeatableFieldChange={
+                      onRepeatableFieldChange
+                    }
+                  />
+                )
+              })}
             </div>
-          ))}
+          ) : (
+            <>
+              {entries.map((entry, entryIndex) => (
+                <div
+                  key={`${field.id}-${entryIndex}`}
+                  className="rounded-md border bg-muted/20 p-4"
+                >
+                  <div className="flex items-center justify-between gap-4">
+                    <p className="text-sm font-medium">
+                      Entry {entryIndex + 1}
+                    </p>
 
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => onRepeatableAdd(field)}
-          >
-            <Plus />
-            Add another
-          </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() =>
+                        onRepeatableRemove(
+                          field,
+                          entryIndex
+                        )
+                      }
+                    >
+                      <Trash2 />
+                      Remove
+                    </Button>
+                  </div>
+
+                  <div className="mt-4 space-y-6">
+                    {field.fields?.map(
+                      (nestedField) => {
+                        const nestedFieldPath =
+                          `${fieldPath}.${entryIndex}.${nestedField.name}`
+
+                        return (
+                          <PreviewField
+                            key={nestedField.id}
+                            field={nestedField}
+                            value={entry[nestedField.name]}
+                            error={errors[nestedFieldPath]}
+                            errors={errors}
+                            fieldPath={nestedFieldPath}
+                            onChange={(
+                              changedField,
+                              newValue
+                            ) =>
+                              onRepeatableFieldChange(
+                                field,
+                                entryIndex,
+                                changedField,
+                                newValue
+                              )
+                            }
+                            onRepeatableAdd={
+                              onRepeatableAdd
+                            }
+                            onRepeatableRemove={
+                              onRepeatableRemove
+                            }
+                            onRepeatableFieldChange={
+                              onRepeatableFieldChange
+                            }
+                          />
+                        )
+                      }
+                    )}
+                  </div>
+                </div>
+              ))}
+
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => onRepeatableAdd(field)}
+              >
+                <Plus />
+                Add another
+              </Button>
+            </>
+          )}
         </div>
       </div>
     )

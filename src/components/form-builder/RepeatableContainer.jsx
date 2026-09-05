@@ -1,3 +1,5 @@
+import { Copy, Trash2 } from 'lucide-react'
+
 import {
   SortableContext,
   verticalListSortingStrategy,
@@ -17,10 +19,14 @@ function RepeatableContainer({
   onDelete,
   onDuplicate,
 }) {
+  const isGroup = field.type === 'group'
+  const containerType =
+    isGroup ? 'group-container' : 'repeatable-container'
+
   const { setNodeRef } = useDroppable({
-    id: `repeatable-${field.id}`,
+    id: `${field.type}-${field.id}`,
     data: {
-      type: 'repeatable-container',
+      type: containerType,
       fieldId: field.id,
     },
   })
@@ -31,42 +37,69 @@ function RepeatableContainer({
     active?.data.current?.type ===
     'palette-field'
 
-  /*
-   * The entire Repeatable should highlight
-   * while dragging a NEW field from the palette
-   * anywhere inside the container.
-   */
   const isHighlighted =
     isDraggingPaletteField &&
-    over?.id ===
-      `repeatable-${field.id}`
+    over?.id === `${field.type}-${field.id}`
 
   return (
     <div
       ref={setNodeRef}
       className={`
-        rounded-lg border-2 p-2 md:p-4
-        transition-all
+        rounded-lg p-2 md:p-4 transition-all
         ${isHighlighted
-          ? 'border-primary bg-primary/5 ring-2 ring-primary/20'
-          : 'border-dashed'
+          ? 'border-2 border-dashed border-primary bg-primary/5 ring-2 ring-primary/20'
+          : 'border border-transparent bg-transparent'
         }
       `}
     >
 
       {/* Container header */}
-      <div>
-        <h3 className="font-medium">
-          {field.label}
-        </h3>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h3 className="font-medium">
+            {field.label}
+          </h3>
 
-        <p className="mt-1 text-xs text-muted-foreground">
-          Repeatable Container
-        </p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            {isGroup ? 'Group Container' : 'Repeatable Container'}
+          </p>
+        </div>
+
+        <div className="flex shrink-0 gap-1">
+          <button
+            type="button"
+            onClick={(event) => {
+              event.stopPropagation()
+              onDuplicate(field.id)
+            }}
+            onPointerDown={(event) =>
+              event.stopPropagation()
+            }
+            className="rounded-md p-2 text-muted-foreground hover:bg-muted hover:text-foreground"
+            aria-label={`Duplicate ${field.label}`}
+          >
+            <Copy className="h-4 w-4" />
+          </button>
+
+          <button
+            type="button"
+            onClick={(event) => {
+              event.stopPropagation()
+              onDelete(field.id)
+            }}
+            onPointerDown={(event) =>
+              event.stopPropagation()
+            }
+            className="rounded-md p-2 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+            aria-label={`Delete ${field.label}`}
+          >
+            <Trash2 className="h-4 w-4" />
+          </button>
+        </div>
       </div>
 
       {/* Nested fields */}
-      <div className="mt-4">
+      <div className="mt-4 w-full">
 
         {field.fields?.length > 0 ? (
           <SortableContext
@@ -79,7 +112,7 @@ function RepeatableContainer({
             }
           >
             <div
-              className="space-y-3"
+              className="w-full space-y-3"
               onPointerDown={(event) =>
                 event.stopPropagation()
               }
@@ -113,14 +146,10 @@ function RepeatableContainer({
             </div>
           </SortableContext>
         ) : (
-          <div className="flex min-h-24 items-center justify-center rounded-md border border-dashed">
+          <div className="flex min-h-10 items-center justify-center rounded-md border border-dashed border-muted-foreground/30 bg-muted/10 py-3">
             <div className="text-center">
-              <p className="text-sm font-medium">
+              <p className="text-xs font-medium text-muted-foreground">
                 Drop fields here
-              </p>
-
-              <p className="mt-1 text-xs text-muted-foreground">
-                Drag fields from the left panel.
               </p>
             </div>
           </div>

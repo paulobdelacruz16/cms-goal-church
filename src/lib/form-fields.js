@@ -6,6 +6,7 @@ export const FIELD_TYPES = {
   CHECKBOX: 'checkbox',
   IMAGE: 'image',
   REPEATABLE: 'repeatable',
+  GROUP: 'group',
 }
 
 export const FIELD_DEFINITIONS = [
@@ -35,19 +36,29 @@ export const FIELD_DEFINITIONS = [
   },
   {
     type: FIELD_TYPES.REPEATABLE,
-    label: 'Container',
+    label: 'Repeatable',
+  },
+  {
+    type: FIELD_TYPES.GROUP,
+    label: 'Group',
   },
 ]
 
 export function createField(type) {
   const id = `field_${crypto.randomUUID()}`
 
-  if (type === FIELD_TYPES.REPEATABLE) {
+  if (
+    type === FIELD_TYPES.REPEATABLE ||
+    type === FIELD_TYPES.GROUP
+  ) {
     return {
       id,
       type,
-      name: `repeatable_${Date.now()}`,
-      label: 'Repeatable Container',
+      name: `${type}_${Date.now()}`,
+      label:
+        type === FIELD_TYPES.GROUP
+          ? 'Group Container'
+          : 'Repeatable Container',
       fields: [],
     }
   }

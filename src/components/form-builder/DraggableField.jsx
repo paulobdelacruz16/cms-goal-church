@@ -19,6 +19,7 @@ const FIELD_ICONS = {
   checkbox: CheckSquare,
   date: CalendarDays,
   repeatable: LayoutGrid,
+  group: LayoutGrid,
   image: ImageIcon,
 }
 

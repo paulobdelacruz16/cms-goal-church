@@ -70,6 +70,18 @@ function FieldRenderer({ field }) {
         </label>
       )
 
+    case FIELD_TYPES.GROUP:
+      return (
+        <div className="rounded-md border border-dashed bg-muted/30 p-3">
+          <div className="mb-2 text-sm font-medium">
+            {field.label}
+          </div>
+          <div className="rounded-md border border-dashed bg-background/50 p-2 text-xs text-muted-foreground">
+            Group container
+          </div>
+        </div>
+      )
+
     case FIELD_TYPES.IMAGE:
       return (
         <div className="rounded-md border border-dashed bg-muted/30 p-3">

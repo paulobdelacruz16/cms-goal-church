@@ -95,7 +95,8 @@ function FormBuilder() {
   const [sidebarMode, setSidebarMode] = useState('form')
   const selectedField = fields
     .flatMap((field) =>
-      field.type === 'repeatable'
+      field.type === 'repeatable' ||
+      field.type === 'group'
         ? [field, ...(field.fields || [])]
         : [field]
     )
@@ -238,7 +239,8 @@ function FormBuilder() {
        */
       if (
         overType ===
-        'repeatable-container'
+          'repeatable-container' ||
+        overType === 'group-container'
       ) {
         const repeatableId =
           over.data.current?.fieldId
@@ -324,16 +326,16 @@ function FormBuilder() {
 
     if (
       activeType ===
-      'repeatable-container'
+        'repeatable-container' ||
+      activeType === 'group-container'
     ) {
       /*
-       * Don't allow a repeatable
-       * container to be dropped
-       * inside itself.
+       * Don't allow a container
+       * to be dropped inside itself.
        */
       if (
         over.id ===
-        `repeatable-${active.id}`
+        `${active.data.current?.type === 'group-container' ? 'group' : 'repeatable'}-${active.id}`
       ) {
         return
       }
@@ -389,7 +391,8 @@ function FormBuilder() {
 
             if (
               field.type !==
-              'repeatable'
+                'repeatable' &&
+              field.type !== 'group'
             ) {
               return field
             }
@@ -438,7 +441,10 @@ function FormBuilder() {
       currentFields
         .filter((field) => field.id !== id)
         .map((field) => {
-          if (field.type !== 'repeatable') {
+          if (
+            field.type !== 'repeatable' &&
+            field.type !== 'group'
+          ) {
             return field
           }
 
@@ -492,7 +498,10 @@ function FormBuilder() {
       // Nested field
       return currentFields.map(
         (field) => {
-          if (field.type !== 'repeatable') {
+          if (
+            field.type !== 'repeatable' &&
+            field.type !== 'group'
+          ) {
             return field
           }
 
@@ -545,7 +554,10 @@ function FormBuilder() {
         }
 
         // Nested field
-        if (field.type === 'repeatable') {
+        if (
+          field.type === 'repeatable' ||
+          field.type === 'group'
+        ) {
           return {
             ...field,
             fields: (field.fields || []).map(
