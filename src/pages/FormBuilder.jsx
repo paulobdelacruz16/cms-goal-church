@@ -608,64 +608,57 @@ function FormBuilder() {
   }
 
   return (
+    <div className="flex min-h-[calc(100vh-7.5rem)] flex-col lg:h-[calc(100vh-4rem)]">
 
-    <div className="flex min-h-[calc(100vh-7.5rem)] flex-col lg:h-[calc(100vh-2rem)]">
-
-      {/* Header */}
-      <header className="flex h-16 shrink-0 items-center justify-between border-b">
-
-        <div className="flex items-center gap-4">
-
-          <Link
-            to="/forms"
-            className={buttonVariants({
-              variant: 'ghost',
-              size: 'icon',
-            })}
-          >
-            <ArrowLeft />
-          </Link>
-
-          <div>
-            <h1 className="font-semibold">
-              {id ? 'Edit Form' : 'New Form'}
-            </h1>
-          </div>
-
-        </div>
-
-        <Button
-          onClick={handleSave}
-          disabled={saving}
-        >
-          <Save />
-
-          {saving
-            ? 'Saving...'
-            : 'Save Form'}
-        </Button>
-
-      </header>
-
-      {/* Builder */}
       <DndContext
         sensors={sensors}
-        collisionDetection={
-          formBuilderCollisionDetection
-        }
+        collisionDetection={formBuilderCollisionDetection}
         onDragStart={handleDragStart}
         onDragCancel={handleDragCancel}
         onDragEnd={handleDragEnd}
       >
 
-        <section className="border-b p-4">
-          <FieldPalette />
+        {/* Field Toolbar */}
+        <section className="shrink-0 border-b bg-background p-4">
+
+          <div className="flex items-center gap-4 rounded-lg border-2 border-dashed p-2">
+            {/* Add Field */}
+            <div className="w-48 shrink-0">
+              <h3 className="text-sm font-semibold text-blue-600">
+                Add Field
+              </h3>
+
+              <p className="mt-1 text-xs text-muted-foreground">
+                Drag or click to add to form
+              </p>
+            </div>
+
+            {/* Field Palette */}
+            <div className="min-w-0 flex-1">
+              <FieldPalette />
+            </div>
+
+            {/* Save Form */}
+            <Button
+              onClick={handleSave}
+              disabled={saving}
+              className="shrink-0 gap-2 bg-foreground text-background hover:bg-foreground/90"
+            >
+              <Save className="h-4 w-4" />
+
+              {saving ? 'Saving...' : 'Save Form'}
+            </Button>
+
+          </div>
+
         </section>
 
-        <div className="grid grid-cols-1 lg:min-h-0 lg:flex-1 lg:grid-cols-[minmax(0,1fr)_280px]">
+
+        {/* Builder */}
+        <div className="grid min-h-0 flex-1 grid-cols-1 lg:grid-cols-[minmax(0,1fr)_280px]">
 
           {/* Canvas */}
-          <main className="min-w-0 bg-[#f0f4f8] p-4 lg:overflow-y-auto lg:p-8">
+          <main className="min-w-0 overflow-y-auto bg-[#f0f4f8] p-4 lg:p-8">
 
             <div className="mx-auto min-h-full max-w-2xl">
 
@@ -697,17 +690,16 @@ function FormBuilder() {
 
           </main>
 
+
           {/* Properties */}
-          <aside className="min-w-0 overflow-x-hidden border-t p-4 lg:overflow-y-auto lg:border-t-0 lg:border-l">
+          <aside className="min-w-0 overflow-x-hidden border-t bg-background p-4 lg:overflow-y-auto lg:border-t-0 lg:border-l">
 
-            <h2 className="text-sm font-semibold">
-              Form Settings
-            </h2>
-
-            {/* Form Name + Slug */}
             {sidebarMode === 'form' ? (
               <>
-                {/* Form Name + Slug */}
+                <h2 className="text-sm font-semibold">
+                  Form Settings
+                </h2>
+
                 <div className="mt-6 space-y-4">
 
                   <div className="space-y-2">
@@ -746,7 +738,6 @@ function FormBuilder() {
 
                 </div>
 
-                {/* Other Form Settings */}
                 <FormSettings
                   formDescription={formDescription}
                   submitButtonText={submitButtonText}
@@ -769,31 +760,30 @@ function FormBuilder() {
                   variant="ghost"
                   size="sm"
                   onClick={handleFormSettingsClick}
+                  className="-ml-2 mb-4"
                 >
-                  <ArrowLeft />
-                  Form Settings
+                  ← Form Settings
                 </Button>
 
-                <div className="mt-6">
+                <h2 className="text-sm font-semibold">
+                  Field Properties
+                </h2>
 
-                  <h2 className="text-sm font-semibold">
-                    Field Properties
-                  </h2>
-
-                  {selectedField && (
-                    <FieldProperties
-                      field={selectedField}
-                      onChange={handleFieldChange}
-                    />
-                  )}
-
-                </div>
+                {selectedField && (
+                  <FieldProperties
+                    field={selectedField}
+                    onChange={handleFieldChange}
+                  />
+                )}
               </>
             )}
 
           </aside>
 
         </div>
+
+
+        {/* Drag Overlay */}
         <DragOverlay>
           {activeField ? (
             <div className="w-48 rounded-lg border bg-background p-3 text-sm font-medium shadow-lg">
