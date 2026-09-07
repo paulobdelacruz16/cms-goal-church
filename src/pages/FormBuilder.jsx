@@ -36,12 +36,43 @@ function formBuilderCollisionDetection(args) {
   const activeType =
     args.active.data.current?.type
 
+  const isExistingContainer =
+    activeType === 'repeatable-container' ||
+    activeType === 'group-container'
+
   /*
    * New palette fields need to target the Repeatable that contains
    * the pointer before considering its nested sortable fields or the
    * enclosing canvas. Existing fields retain the current sorting
    * collision behavior.
    */
+  if (isExistingContainer) {
+    const activeParentId =
+      args.active.data.current?.parentId || null
+
+    const siblingDroppables =
+      args.droppableContainers.filter(
+        (container) =>
+          container.data.current?.sortableField &&
+          container.data.current?.parentId ===
+          activeParentId
+      )
+
+    const pointerCollisions = pointerWithin({
+      ...args,
+      droppableContainers: siblingDroppables,
+    })
+
+    if (pointerCollisions.length > 0) {
+      return pointerCollisions
+    }
+
+    return closestCenter({
+      ...args,
+      droppableContainers: siblingDroppables,
+    })
+  }
+
   if (activeType !== 'palette-field') {
     return closestCenter(args)
   }

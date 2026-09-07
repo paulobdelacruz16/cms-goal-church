@@ -12,7 +12,12 @@ function SortableField({
   onSelect,
   onDelete,
   onDuplicate,
+  parentId,
 }) {
+  const isContainer =
+    field.type === 'repeatable' ||
+    field.type === 'group'
+
   const {
     attributes,
     listeners,
@@ -22,6 +27,13 @@ function SortableField({
     isDragging,
   } = useSortable({
     id: field.id,
+    data: {
+      type: isContainer
+        ? `${field.type}-container`
+        : 'field',
+      parentId: parentId || null,
+      sortableField: true,
+    },
   })
 
   const style = {
@@ -29,10 +41,6 @@ function SortableField({
     transition,
     opacity: isDragging ? 0.5 : 1,
   }
-
-  const isContainer =
-    field.type === 'repeatable' ||
-    field.type === 'group'
 
   return (
     <div
