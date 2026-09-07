@@ -7,6 +7,7 @@ import {
 import { useNavigate } from 'react-router-dom'
 
 import {
+  deleteFormDataByFormName,
   getLatestFormData,
 } from '@/api/formdata'
 
@@ -29,6 +30,9 @@ function Submissions() {
     useState(true)
 
   const [error, setError] =
+    useState(null)
+
+  const [deletingFormName, setDeletingFormName] =
     useState(null)
 
   useEffect(() => {
@@ -119,6 +123,50 @@ function Submissions() {
       forms[formId]?.name ||
       'Unknown Form'
     )
+  }
+
+  async function handleDelete(submission) {
+    const form = forms[submission.formId]
+    const formName = form?.slug
+
+    if (!formName) {
+      setError('Unable to delete submissions: form slug not found.')
+      return
+    }
+
+    if (
+      !window.confirm(
+        `Delete all submissions for ${form.name}?`
+      )
+    ) {
+      return
+    }
+
+    try {
+      setDeletingFormName(formName)
+      setError(null)
+
+      await deleteFormDataByFormName(formName)
+
+      setSubmissions((currentSubmissions) =>
+        currentSubmissions.filter(
+          (currentSubmission) =>
+            currentSubmission.formId !==
+            submission.formId
+        )
+      )
+    } catch (deleteError) {
+      console.error(
+        'Failed to delete submissions:',
+        deleteError
+      )
+
+      setError(
+        'Failed to delete submissions.'
+      )
+    } finally {
+      setDeletingFormName(null)
+    }
   }
 
   if (loading) {
@@ -223,19 +271,6 @@ function Submissions() {
                 {/* Actions */}
                 <div className="flex justify-end gap-2">
 
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() =>
-                      navigate(
-                        `/forms/${submission.formId}/preview`
-                      )
-                    }
-                  >
-                    <Eye />
-                    View
-                  </Button>
 
                   <Button
                     type="button"
@@ -255,9 +290,19 @@ function Submissions() {
                     type="button"
                     variant="outline"
                     size="sm"
+                    onClick={() =>
+                      handleDelete(submission)
+                    }
+                    disabled={
+                      deletingFormName ===
+                      forms[submission.formId]?.slug
+                    }
                   >
                     <Trash2 />
-                    Delete
+                    {deletingFormName ===
+                    forms[submission.formId]?.slug
+                      ? 'Deleting...'
+                      : 'Delete'}
                   </Button>
 
                 </div>

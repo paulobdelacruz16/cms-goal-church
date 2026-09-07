@@ -87,3 +87,20 @@ export async function getFormDataByFormId(formId) {
   return response.json()
 }
 
+export async function deleteFormDataByFormName(formName) {
+  const response = await fetch(
+    `${API_BASE_URL}/formdata/formname/${encodeURIComponent(formName)}`,
+    {
+      method: 'DELETE',
+    }
+  )
+
+  if (!response.ok) {
+    throw new Error(
+      'Failed to delete form submissions'
+    )
+  }
+
+  return response
+}
+
