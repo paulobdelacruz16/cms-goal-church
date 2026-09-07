@@ -4,6 +4,7 @@ import {
   ArrowLeft,
   History,
   Plus,
+  Save,
   Trash2,
   Image as ImageIcon,
   X,
@@ -367,10 +368,53 @@ function FormPreview() {
   return (
     <div className="min-h-full bg-muted/30 p-6 md:p-10">
 
+      {(submitted || submitError) && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          role="presentation"
+        >
+          <div
+            className="w-full max-w-md rounded-lg border bg-background p-6 shadow-lg"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="submission-result-title"
+          >
+            <h2
+              id="submission-result-title"
+              className={`text-lg font-semibold ${
+                submitError
+                  ? 'text-destructive'
+                  : 'text-green-700'
+              }`}
+            >
+              {submitError
+                ? 'Unable to save response'
+                : 'Response saved'}
+            </h2>
+
+            <p className="mt-2 text-sm text-muted-foreground">
+              {submitError || form.successMessage || 'Your response has been saved successfully.'}
+            </p>
+
+            <div className="mt-6 flex justify-end">
+              <Button
+                type="button"
+                onClick={() => {
+                  setSubmitted(false)
+                  setSubmitError(null)
+                }}
+              >
+                Close
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="mx-auto max-w-3xl">
 
         {/* Header */}
-        <div className="mb-6 flex items-center justify-between">
+        <div className="sticky top-0 z-20 -mx-6 mb-6 flex items-center justify-between gap-4 border-b bg-muted/95 px-6 py-4 backdrop-blur md:-mx-10 md:px-10">
 
           <div>
             <p className="text-sm font-medium text-primary">
@@ -416,12 +460,30 @@ function FormPreview() {
               </Link>
             </Button>
 
+            {form.fields?.length > 0 && (
+              <Button
+                type="submit"
+                form="form-preview"
+                disabled={submitting}
+              >
+                <Save />
+                {submitting
+                  ? isUpdateMode
+                    ? 'Updating...'
+                    : 'Saving...'
+                  : isUpdateMode
+                    ? 'Update'
+                    : form.submitButtonText || 'Save'}
+              </Button>
+            )}
+
           </div>
 
         </div>
 
         {/* Form */}
         <form
+          id="form-preview"
           onSubmit={handleSubmit}
           className="rounded-xl border bg-background p-6 shadow-sm md:p-8"
         >
@@ -457,44 +519,6 @@ function FormPreview() {
             )}
 
           </div>
-
-          {/* Submit / Update */}
-          {form.fields?.length > 0 && (
-            <div className="mt-8 border-t pt-6">
-
-              <Button
-                type="submit"
-                disabled={submitting}
-              >
-                {submitting
-                  ? isUpdateMode
-                    ? 'Updating...'
-                    : 'Submitting...'
-                  : isUpdateMode
-                    ? 'Update'
-                    : form.submitButtonText || 'Submit'}
-              </Button>
-
-            </div>
-          )}
-
-          {submitted && (
-            <div
-              role="status"
-              className="mt-4 rounded-lg border border-green-200 bg-green-50 p-4 text-sm text-green-700"
-            >
-              {isUpdateMode
-                ? 'Your response has been updated.'
-                : form.successMessage ||
-                'Thank you! Your response has been submitted.'}
-            </div>
-          )}
-
-          {submitError && (
-            <div className="mt-4 rounded-lg border border-destructive/20 bg-destructive/10 p-4 text-sm text-destructive">
-              {submitError}
-            </div>
-          )}
 
         </form>
 
