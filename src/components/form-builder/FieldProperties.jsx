@@ -165,6 +165,20 @@ function FieldProperties({
     })
   }
 
+  function normalizeFieldName(value) {
+    return value
+      .toLowerCase()
+      .replace(/\s+/g, '')
+  }
+
+  function handleLabelChange(value) {
+    onChange({
+      ...field,
+      label: value,
+      name: normalizeFieldName(value),
+    })
+  }
+
   /*
    * Convert label into a usable value.
    *
@@ -360,10 +374,7 @@ function FieldProperties({
           id="field-label"
           value={field.label || ''}
           onChange={(event) =>
-            updateField(
-              'label',
-              event.target.value
-            )
+            handleLabelChange(event.target.value)
           }
         />
 
@@ -382,7 +393,9 @@ function FieldProperties({
           onChange={(event) =>
             updateField(
               'name',
-              event.target.value
+              normalizeFieldName(
+                event.target.value
+              )
             )
           }
         />

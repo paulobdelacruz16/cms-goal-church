@@ -116,14 +116,14 @@ function setValueAtPath(values, path, value) {
 
   nextValues[key] = remainingPath.length > 0
     ? setValueAtPath(
-        values?.[key] || (
-          typeof remainingPath[0] === 'number'
-            ? []
-            : {}
-        ),
-        remainingPath,
-        value
-      )
+      values?.[key] || (
+        typeof remainingPath[0] === 'number'
+          ? []
+          : {}
+      ),
+      remainingPath,
+      value
+    )
     : value
 
   return nextValues
@@ -303,13 +303,15 @@ function FormPreview() {
       setSubmitted(false)
       setSubmitError(null)
 
+      console.log('Submitting form data:', form)
       const data = {
         formId: form._id,
+        formName: form.slug,
         data: values,
         submittedAt: new Date().toISOString(),
       }
 
-      let result =  await createFormData(data)
+      let result = await createFormData(data)
 
       setLatestSubmission(result)
       setValues(result.data || values)
@@ -542,10 +544,10 @@ function GitHubImagePickerModal({
 
         const fileItems = Array.isArray(data)
           ? data.filter(
-              (item) =>
-                item?.type === 'file' &&
-                isImageFileName(item?.name)
-            )
+            (item) =>
+              item?.type === 'file' &&
+              isImageFileName(item?.name)
+          )
           : []
 
         setImages(fileItems)
@@ -688,11 +690,11 @@ function PreviewField({
                     error={errors[nestedFieldPath]}
                     errors={errors}
                     fieldPath={nestedFieldPath}
-                        valuePath={[
-                          ...valuePath,
-                          nestedField.name,
-                        ]}
-                        onChange={onChange}
+                    valuePath={[
+                      ...valuePath,
+                      nestedField.name,
+                    ]}
+                    onChange={onChange}
                     onRepeatableAdd={
                       onRepeatableAdd
                     }
@@ -748,14 +750,14 @@ function PreviewField({
                             error={errors[nestedFieldPath]}
                             errors={errors}
                             fieldPath={nestedFieldPath}
-                                valuePath={[
-                                  ...valuePath,
-                                  entryIndex,
-                                  nestedField.name,
-                                ]}
-                                onChange={
-                                  onRepeatableFieldChange
-                                }
+                            valuePath={[
+                              ...valuePath,
+                              entryIndex,
+                              nestedField.name,
+                            ]}
+                            onChange={
+                              onRepeatableFieldChange
+                            }
                             onRepeatableAdd={
                               onRepeatableAdd
                             }
