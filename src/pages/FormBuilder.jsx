@@ -162,6 +162,51 @@ function updateFieldById(items, updatedField) {
   })
 }
 
+function reorderFieldWithinLevel(items, activeId, overId) {
+  const activeIndex = items.findIndex(
+    (field) => field.id === activeId
+  )
+
+  const overIndex = items.findIndex(
+    (field) => field.id === overId
+  )
+
+  if (activeIndex !== -1 && overIndex !== -1) {
+    return arrayMove(items, activeIndex, overIndex)
+  }
+
+  for (let index = 0; index < items.length; index += 1) {
+    const field = items[index]
+
+    if (
+      (field.type !== 'repeatable' &&
+        field.type !== 'group') ||
+      !Array.isArray(field.fields)
+    ) {
+      continue
+    }
+
+    const reorderedFields = reorderFieldWithinLevel(
+      field.fields,
+      activeId,
+      overId
+    )
+
+    if (reorderedFields !== field.fields) {
+      return [
+        ...items.slice(0, index),
+        {
+          ...field,
+          fields: reorderedFields,
+        },
+        ...items.slice(index + 1),
+      ]
+    }
+  }
+
+  return items
+}
+
 function removeFieldById(items, fieldId) {
   return items
     .filter((field) => field.id !== fieldId)
@@ -657,51 +702,10 @@ function FormBuilder() {
         /*
          * Nested reorder
          */
-        return currentFields.map(
-          (field) => {
-
-            if (
-              field.type !==
-                'repeatable' &&
-              field.type !== 'group'
-            ) {
-              return field
-            }
-
-            const nestedFields =
-              field.fields || []
-
-            const nestedOldIndex =
-              nestedFields.findIndex(
-                (nestedField) =>
-                  nestedField.id ===
-                  activeId
-              )
-
-            const nestedNewIndex =
-              nestedFields.findIndex(
-                (nestedField) =>
-                  nestedField.id ===
-                  overId
-              )
-
-            if (
-              nestedOldIndex === -1 ||
-              nestedNewIndex === -1
-            ) {
-              return field
-            }
-
-            return {
-              ...field,
-
-              fields: arrayMove(
-                nestedFields,
-                nestedOldIndex,
-                nestedNewIndex
-              ),
-            }
-          }
+        return reorderFieldWithinLevel(
+          currentFields,
+          activeId,
+          overId
         )
       }
     )
