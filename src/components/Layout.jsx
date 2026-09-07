@@ -1,12 +1,21 @@
-import { Link, Outlet } from 'react-router-dom'
+import { Link, Outlet, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard,
   FileText,
   ClipboardList,
-  LogIn,
+  LogOut,
 } from 'lucide-react'
 
+import { logout } from '@/api/auth'
+
 function Layout() {
+  const navigate = useNavigate()
+
+  function handleLogout() {
+    logout()
+    navigate('/login', { replace: true })
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
 
@@ -49,13 +58,14 @@ function Layout() {
 
           </nav>
 
-          <Link
-            to="/login"
+          <button
+            type="button"
+            onClick={handleLogout}
             className="flex shrink-0 items-center gap-2 text-sm text-gray-600 hover:text-gray-900"
           >
-            <LogIn size={18} />
-            Login
-          </Link>
+            <LogOut size={18} />
+            Logout
+          </button>
 
         </div>
       </header>

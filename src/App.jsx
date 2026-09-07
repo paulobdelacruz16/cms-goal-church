@@ -1,7 +1,9 @@
 import {
   BrowserRouter,
+  Navigate,
   Routes,
   Route,
+  useLocation,
 } from 'react-router-dom'
 
 import Layout from './components/Layout'
@@ -13,6 +15,23 @@ import FormPreview from './pages/FormPreview'
 import Login from './pages/Login'
 import Submissions from './pages/Submissions'
 import FormHistory from './pages/FormHistory'
+import { getAuthSession } from '@/api/auth'
+
+function ProtectedRoute({ children }) {
+  const location = useLocation()
+
+  if (!getAuthSession()) {
+    return (
+      <Navigate
+        to="/login"
+        replace
+        state={{ from: location }}
+      />
+    )
+  }
+
+  return children
+}
 
 function App() {
   return (
@@ -27,7 +46,13 @@ function App() {
         />
 
         {/* Application */}
-        <Route element={<Layout />}>
+        <Route
+          element={
+            <ProtectedRoute>
+              <Layout />
+            </ProtectedRoute>
+          }
+        >
 
           <Route
             path="/"
