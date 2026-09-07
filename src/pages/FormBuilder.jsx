@@ -212,6 +212,27 @@ function duplicateFieldById(items, fieldId) {
   return items
 }
 
+function findDuplicateFieldNames(items, duplicates = new Set()) {
+  const names = new Set()
+
+  items.forEach((field) => {
+    if (names.has(field.name)) {
+      duplicates.add(field.name)
+    }
+
+    names.add(field.name)
+
+    if (Array.isArray(field.fields)) {
+      findDuplicateFieldNames(
+        field.fields,
+        duplicates
+      )
+    }
+  })
+
+  return [...duplicates]
+}
+
 function FormBuilder() {
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -226,6 +247,7 @@ function FormBuilder() {
   const [activeField, setActiveField] = useState(null)
   const [dragPosition, setDragPosition] = useState({ x: 0, y: 0 })
   const [selectedFieldId, setSelectedFieldId] = useState(null)
+  const [saveError, setSaveError] = useState('')
   const [formName, setFormName] = useState('Untitled Form')
   const [formSlug, setFormSlug] = useState('untitled-form')
   const [sidebarMode, setSidebarMode] = useState('form')
@@ -289,6 +311,18 @@ function FormBuilder() {
   }
 
   async function handleSave() {
+    const duplicateNames =
+      findDuplicateFieldNames(fields)
+
+    if (duplicateNames.length > 0) {
+      setSaveError(
+        `Field names must be unique: ${duplicateNames.join(', ')}`
+      )
+      return
+    }
+
+    setSaveError('')
+
     const formData = {
       name: formName,
       slug: formSlug,
@@ -738,6 +772,40 @@ function FormBuilder() {
 
   return (
     <div className="flex min-h-[calc(100vh-7.5rem)] flex-col lg:h-[calc(100vh-4rem)]">
+
+      {saveError && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          role="presentation"
+        >
+          <div
+            className="w-full max-w-md rounded-lg border bg-background p-6 shadow-lg"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="save-error-title"
+          >
+            <h2
+              id="save-error-title"
+              className="text-lg font-semibold"
+            >
+              Cannot save form
+            </h2>
+
+            <p className="mt-2 text-sm text-muted-foreground">
+              {saveError}
+            </p>
+
+            <div className="mt-6 flex justify-end">
+              <Button
+                type="button"
+                onClick={() => setSaveError('')}
+              >
+                Close
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <DndContext
         sensors={sensors}
