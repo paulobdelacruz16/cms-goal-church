@@ -3,6 +3,7 @@ import {
   Navigate,
   Routes,
   Route,
+  Outlet,
   useLocation,
 } from 'react-router-dom'
 
@@ -33,6 +34,16 @@ function ProtectedRoute({ children }) {
   return children
 }
 
+function AdminRoute() {
+  const session = getAuthSession()
+
+  if (session?.role !== 'admin') {
+    return <Navigate to="/" replace />
+  }
+
+  return <Outlet />
+}
+
 function App() {
   return (
     <BrowserRouter>
@@ -59,15 +70,27 @@ function App() {
             element={<Dashboard />}
           />
 
-          <Route
-            path="/forms"
-            element={<Forms />}
-          />
+          <Route element={<AdminRoute />}>
+            <Route
+              path="/forms"
+              element={<Forms />}
+            />
 
-          <Route
-            path="/forms/new"
-            element={<FormBuilder />}
-          />
+            <Route
+              path="/forms/new"
+              element={<FormBuilder />}
+            />
+
+            <Route
+              path="/forms/:id"
+              element={<FormBuilder />}
+            />
+
+            <Route
+              path="/forms/:id/edit"
+              element={<FormBuilder />}
+            />
+          </Route>
 
           <Route
             path="/forms/submissions"
@@ -81,18 +104,6 @@ function App() {
           <Route
             path="/forms/:id/history/:formdataId"
             element={<FormHistory />}
-          />
-
-          <Route
-            path="/forms/:id"
-            element={<FormBuilder />}
-          />
-
-
-
-          <Route
-            path="/forms/:id/edit"
-            element={<FormBuilder />}
           />
 
           <Route

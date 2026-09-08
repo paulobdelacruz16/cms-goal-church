@@ -2,9 +2,11 @@ import { useQuery } from '@tanstack/react-query'
 import { FileText, Database } from 'lucide-react'
 
 import { getLatestFormData } from '@/api/formdata'
+import { getAuthSession } from '@/api/auth'
 import { useFormTemplate } from '@/hooks/useFormTemplate'
 
 function Dashboard() {
+  const session = getAuthSession()
   const { data: forms = [] } = useFormTemplate()
   const { data: submissions = [] } = useQuery({
     queryKey: ['formdata', 'latest'],
@@ -31,7 +33,7 @@ function Dashboard() {
           </h1>
 
           <p className="mt-1 text-muted-foreground">
-            Manage your forms and submissions.
+            Welcome, {session?.name || session?.username}.
           </p>
         </div>
       </div>

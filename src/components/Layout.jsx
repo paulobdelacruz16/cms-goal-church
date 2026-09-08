@@ -6,10 +6,11 @@ import {
   LogOut,
 } from 'lucide-react'
 
-import { logout } from '@/api/auth'
+import { getAuthSession, logout } from '@/api/auth'
 
 function Layout() {
   const navigate = useNavigate()
+  const session = getAuthSession()
 
   function handleLogout() {
     logout()
@@ -40,13 +41,15 @@ function Layout() {
               Dashboard
             </Link>
 
-            <Link
-              to="/forms"
-              className="flex shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-sm hover:bg-gray-100"
-            >
-              <FileText size={18} />
-              Forms
-            </Link>
+            {session?.role === 'admin' && (
+              <Link
+                to="/forms"
+                className="flex shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-sm hover:bg-gray-100"
+              >
+                <FileText size={18} />
+                Forms
+              </Link>
+            )}
 
             <Link
               to="/forms/submissions"

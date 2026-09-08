@@ -28,6 +28,8 @@ export async function login(username, password) {
 
   const session = {
     username: account.username,
+    name: account.name,
+    role: account.role,
   }
 
   sessionStorage.setItem(
