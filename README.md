@@ -1,6 +1,21 @@
-# React + Vite
+# Form Builder
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Deploy to Vercel
+
+This is a Vite single-page application. Vercel will use the included
+`vercel.json` rewrite so client-side routes such as `/forms` work when opened
+directly.
+
+Before deploying, configure the Vercel project with:
+
+- **Framework Preset:** Vite
+- **Build Command:** `npm run build`
+- **Output Directory:** `dist`
+- **Environment Variable:** `VITE_API_URL`, set to the URL of the deployed API
+
+The API is not included in this frontend project. Copy `.env.example` to
+`.env.local` for local development and set `VITE_API_URL` to the API server.
+
 
 Currently, two official plugins are available:
 
