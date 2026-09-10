@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import {
-  Eye,
   Pencil,
   Trash2,
 } from 'lucide-react'
@@ -230,7 +229,7 @@ function Submissions() {
         <div className="mt-8 overflow-hidden rounded-lg border">
 
           {/* Header */}
-          <div className="grid grid-cols-[1fr_220px_220px] border-b bg-muted/50 px-5 py-3 text-sm font-medium">
+          <div className="grid grid-cols-1 gap-2 border-b bg-muted/50 px-5 py-3 text-sm font-medium md:grid-cols-[1fr_220px_220px] md:gap-0">
 
             <div>
               Form
@@ -240,7 +239,7 @@ function Submissions() {
               Submitted
             </div>
 
-            <div className="text-right">
+            <div className="md:text-right">
               Actions
             </div>
 
@@ -251,7 +250,7 @@ function Submissions() {
             (submission) => (
               <div
                 key={submission._id}
-                className="grid grid-cols-[1fr_220px_220px] items-center border-b px-5 py-4 last:border-b-0"
+                className="grid grid-cols-1 gap-3 border-b px-5 py-4 last:border-b-0 md:grid-cols-[1fr_220px_220px] md:items-center md:gap-0"
               >
 
                 {/* Form */}
@@ -269,7 +268,7 @@ function Submissions() {
                 </div>
 
                 {/* Actions */}
-                <div className="flex justify-end gap-2">
+                <div className="flex flex-wrap justify-start gap-2 md:justify-end">
 
 
                   <Button
