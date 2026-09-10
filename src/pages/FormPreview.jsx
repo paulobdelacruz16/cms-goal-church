@@ -414,7 +414,7 @@ function FormPreview() {
       <div className="mx-auto max-w-3xl">
 
         {/* Header */}
-        <div className="sticky top-0 z-20 -mx-6 mb-6 flex items-center justify-between gap-4 border-b bg-muted/95 px-6 py-4 backdrop-blur md:-mx-10 md:px-10">
+        <div className="sticky top-0 z-20 -mx-6 mb-6 flex flex-col gap-4 border-b bg-background/95 px-6 py-4 backdrop-blur md:-mx-10 md:flex-row md:items-center md:justify-between md:px-10">
 
           <div>
             <p className="text-sm font-medium text-primary">
@@ -432,12 +432,13 @@ function FormPreview() {
             )}
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex w-full flex-wrap gap-2 md:w-auto md:items-center md:justify-end">
 
             {isUpdateMode && (
               <Button
                 asChild
                 variant="outline"
+                className="flex-1 md:flex-none"
               >
                 <Link
                   to={`/forms/${form._id}/history`}
@@ -451,6 +452,7 @@ function FormPreview() {
             <Button
               asChild
               variant="outline"
+              className="flex-1 md:flex-none"
             >
               <Link
                 to={`/forms/${form._id}/edit`}
@@ -465,6 +467,7 @@ function FormPreview() {
                 type="submit"
                 form="form-preview"
                 disabled={submitting}
+                className="flex-1 md:flex-none"
               >
                 <Save />
                 {submitting
